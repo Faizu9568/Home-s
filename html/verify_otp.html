@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Verify OTP | HomeServe</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 20px;
+        }
+
+        .logo {
+            text-align: center;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.20);
+        }
+
+        .icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin: 10px 0;
+            color: #111827;
+        }
+
+        .description {
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        .otp-display {
+            background: #eff6ff;
+            border: 2px dashed #2563eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .otp-display small {
+            display: block;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .otp-number {
+            font-size: 30px;
+            font-weight: bold;
+            letter-spacing: 6px;
+            color: #2563eb;
+        }
+
+        .otp-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px;
+            text-align: center;
+            letter-spacing: 8px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: #2563eb;
+        }
+
+        .verify-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .verify-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .back {
+            display: block;
+            margin-top: 20px;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .demo {
+            margin-top: 25px;
+            padding: 12px;
+            background: #fff7ed;
+            border-radius: 10px;
+            color: #9a3412;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        HomeServe
+    </div>
+
+    <div class="card">
+
+        <div class="icon">
+            🔐
+        </div>
+
+        <h1>
+            Verify OTP
+        </h1>
+
+        <p class="description">
+            Enter the 6-digit OTP shown below.
+        </p>
+
+        <!-- TEST OTP -->
+        <div class="otp-display">
+
+            <small>
+                Your OTP
+            </small>
+
+            <div class="otp-number" id="otpNumber">
+                ------
+            </div>
+
+        </div>
+
+        <!-- VERIFY FORM -->
+        <form action="../php/verify_otp.php" method="POST">
+
+            <input
+                type="hidden"
+                name="redirect"
+                id="redirect"
+                value="dashboard"
+            >
+
+            <input
+                type="text"
+                name="otp"
+                class="otp-input"
+                placeholder="000000"
+                maxlength="6"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                pattern="[0-9]{6}"
+                required
+            >
+
+            <button
+                type="submit"
+                class="verify-btn"
+            >
+                Verify & Login
+            </button>
+
+        </form>
+
+        <a
+            href="login.html"
+            class="back"
+        >
+            ← Back to Login
+        </a>
+
+        <div class="demo">
+
+            <strong>Local Testing Mode</strong>
+
+            <br><br>
+
+            Real SMS is not connected yet.
+
+            <br>
+
+            Enter the OTP displayed above.
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const redirect = params.get("redirect");
+const testOtp = params.get("test_otp");
+
+/* Redirect value */
+if (redirect === "booking") {
+    document.getElementById("redirect").value = "booking";
+}
+
+/* Show OTP */
+if (testOtp) {
+    document.getElementById("otpNumber").textContent = testOtp;
+}
+
+</script>
+
+</body>
+
+</html>

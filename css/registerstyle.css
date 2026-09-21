@@ -1,0 +1,10 @@
+input[type="text"],
+input[type="tel"],
+select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #cbd3df;
+    border-radius: 6px;
+    font-size: 15px;
+    background-color: white;
+}

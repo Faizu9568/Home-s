@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | HomeServe</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/loginstyle.css">
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            HomeServe
+        </div>
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+
+            <li>
+                <a href="service.html">Services</a>
+            </li>
+
+            <li>
+                <a href="index.html#about">About</a>
+            </li>
+
+            <li>
+                <a href="index.html#contact">Contact</a>
+            </li>
+
+        </ul>
+
+    </nav>
+
+
+    <!-- ================= LOGIN SECTION ================= -->
+
+    <section class="login-section">
+
+        <div class="login-box">
+
+            <h1>
+                Welcome to HomeServe 👋
+            </h1>
+
+            <p class="login-description">
+                Login or sign up using your mobile number.
+            </p>
+
+
+            <!-- ================= CUSTOMER MOBILE LOGIN ================= -->
+
+            <form
+                id="customerForm"
+                action="../php/send_otp.php"
+                method="POST"
+            >
+
+                <!--
+                    Default redirect is dashboard.
+                    If user came from Book Now,
+                    JavaScript will change this to booking.
+                -->
+
+                <input
+                    type="hidden"
+                    name="redirect"
+                    id="redirect"
+                    value="dashboard"
+                >
+
+
+                <!-- MOBILE NUMBER -->
+
+                <label for="phone">
+                    Mobile Number
+                </label>
+
+
+                <div class="phone-input">
+
+                    <span>
+                        +91
+                    </span>
+
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        placeholder="Enter mobile number"
+                        maxlength="10"
+                        pattern="[0-9]{10}"
+                        inputmode="numeric"
+                        autocomplete="tel"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- CONTINUE BUTTON -->
+
+                <button type="submit">
+                    Continue
+                </button>
+
+            </form>
+
+
+            <!-- ================= SKIP ================= -->
+
+            <p class="skip-text">
+
+                <a href="index.html">
+                    Skip for now →
+                </a>
+
+            </p>
+
+
+            <!-- ================= STAFF LOGIN ================= -->
+
+            <div class="staff-login">
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+
+                <!-- PROVIDER LOGIN -->
+
+                <p>
+                    Are you a Service Provider?
+                </p>
+
+                <a
+                    href="provider-login.html"
+                    class="staff-link"
+                >
+                    Provider Login
+                </a>
+
+
+                <!-- ADMIN LOGIN -->
+
+                <p class="admin-question">
+                    Are you an administrator?
+                </p>
+
+                <a
+                    href="../admin/login.php"
+                    class="staff-link"
+                >
+                    Admin Login
+                </a>
+
+            </div>
+
+
+            <!-- ================= REGISTER ================= -->
+
+            <p class="register-text">
+
+                Don't have an account?
+
+                <a href="register.html">
+                    Create account
+                </a>
+
+            </p>
+
+
+            <!-- ================= BACK TO HOME ================= -->
+
+            <p class="register-text">
+
+                <a href="index.html">
+                    ← Back to Home
+                </a>
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <h3>
+            HomeServe
+        </h3>
+
+        <p>
+            Your trusted home service provider.
+        </p>
+
+        <p>
+            © 2026 HomeServe. All Rights Reserved.
+        </p>
+
+    </footer>
+
+
+    <!-- ================= LOGIN SCRIPT ================= -->
+
+    <script>
+
+        /*
+         * Get URL parameters.
+         *
+         * Example:
+         * login.html?redirect=booking
+         */
+
+        const params =
+            new URLSearchParams(window.location.search);
+
+
+        /*
+         * Get redirect value.
+         */
+
+        const redirect =
+            params.get("redirect");
+
+
+        /*
+         * If customer came from Book Now,
+         * redirect to booking after OTP login.
+         */
+
+        if (redirect === "booking") {
+
+            document.getElementById("redirect").value =
+                "booking";
+
+        }
+
+
+        /*
+         * MOBILE NUMBER VALIDATION
+         *
+         * Allow only numbers.
+         */
+
+        const phoneInput =
+            document.getElementById("phone");
+
+
+        phoneInput.addEventListener(
+            "input",
+            function () {
+
+                this.value =
+                    this.value.replace(/\D/g, "");
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

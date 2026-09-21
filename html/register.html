@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | HomeServe</title>
+
+    <link rel="stylesheet" href="../css/loginstyle.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo">HomeServe</div>
+
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="service.html">Services</a></li>
+        </ul>
+
+        <div class="nav-buttons">
+            <a href="login.html" class="login-btn">Login</a>
+            <a href="register.html" class="signup-btn">Register</a>
+        </div>
+    </nav>
+
+
+    <section class="login-section">
+
+        <div class="login-box">
+
+            <h1>Create Account</h1>
+
+            <p>
+                Join HomeServe and book or provide home services.
+            </p>
+
+
+            <form action="../php/register_process.php" method="POST">
+
+                <label for="fullName">Full Name</label>
+
+                <input
+                    type="text"
+                    id="fullName"
+                    name="full_name"
+                    placeholder="Enter your full name"
+                    required
+                >
+
+
+                <label for="registerEmail">Email Address</label>
+
+                <input
+                    type="email"
+                    id="registerEmail"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+
+                <label for="registerPhone">Mobile Number</label>
+
+                <input
+                    type="tel"
+                    id="registerPhone"
+                    name="phone"
+                    placeholder="Enter 10-digit mobile number"
+                    pattern="[0-9]{10}"
+                    maxlength="10"
+                    required
+                >
+
+
+                <label for="userRole">Register As</label>
+
+                <select id="userRole" name="role" required>
+
+                    <option value="">
+                        Choose account type
+                    </option>
+
+                    <option value="customer">
+                        Customer
+                    </option>
+
+                    <option value="provider">
+                        Service Provider
+                    </option>
+
+                </select>
+
+
+                <!-- Provider Service Selection -->
+
+                <div id="providerServiceBox" style="display: none;">
+
+                    <label for="serviceId">
+                        Select Your Service
+                    </label>
+
+                    <select id="serviceId" name="service_id">
+
+                        <option value="">
+                            Choose service
+                        </option>
+
+                        <option value="1">
+                            Electrical
+                        </option>
+
+                        <option value="2">
+                            Plumbing
+                        </option>
+
+                        <option value="3">
+                            Cleaning
+                        </option>
+
+                        <option value="4">
+                            AC Repair
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <label for="registerPassword">
+                    Create Password
+                </label>
+
+                <input
+                    type="password"
+                    id="registerPassword"
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                >
+
+
+                <label for="confirmPassword">
+                    Confirm Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirm_password"
+                    placeholder="Enter password again"
+                    required
+                >
+
+
+                <button type="submit">
+                    Create Account
+                </button>
+
+            </form>
+
+
+            <p class="register-text">
+
+                Already have an account?
+
+                <a href="login.html">
+                    Login here
+                </a>
+
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+
+        <h3>HomeServe</h3>
+
+        <p>
+            Your trusted home service provider.
+        </p>
+
+        <p>
+            © 2026 HomeServe. All Rights Reserved.
+        </p>
+
+    </footer>
+
+
+    <script>
+
+        const roleSelect =
+            document.getElementById("userRole");
+
+        const serviceBox =
+            document.getElementById("providerServiceBox");
+
+        const serviceSelect =
+            document.getElementById("serviceId");
+
+
+        roleSelect.addEventListener("change", function () {
+
+            if (this.value === "provider") {
+
+                serviceBox.style.display = "block";
+
+                serviceSelect.required = true;
+
+            } else {
+
+                serviceBox.style.display = "none";
+
+                serviceSelect.required = false;
+
+                serviceSelect.value = "";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+```

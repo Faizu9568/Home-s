@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Book Service | HomeServe</title>
+
+    <link rel="stylesheet" href="../css/bookingstyle.css">
+
+    <style>
+
+        .price-box {
+            margin-top: 20px;
+            padding: 18px;
+            background: #f5f7fb;
+            border-radius: 10px;
+        }
+
+        .price-box p {
+            margin: 8px 0;
+        }
+
+        .total-price {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1d477d;
+        }
+
+        .hours-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            HomeServe
+        </div>
+
+        <ul class="nav-links">
+
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+
+            <li>
+                <a href="service.html">Services</a>
+            </li>
+
+            <li>
+                <a href="index.html#about">About</a>
+            </li>
+
+            <li>
+                <a href="index.html#contact">Contact</a>
+            </li>
+
+        </ul>
+
+        <div class="nav-buttons">
+
+            <a href="login.html" class="login-btn">
+                Login
+            </a>
+
+            <a href="register.html" class="signup-btn">
+                Register
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- BOOKING SECTION -->
+
+    <section class="booking-section">
+
+        <div class="booking-box">
+
+            <h1>Book a Service</h1>
+
+            <p class="subtitle">
+                Fill in your details and book a trusted professional.
+            </p>
+
+
+            <form
+    id="bookingForm"
+    action="../php/booking_process.php"
+    method="POST"
+>
+
+
+                <!-- SERVICE -->
+
+                <label for="service">
+                    Select Service
+                </label>
+
+                <select
+                    id="service"
+                    name="service_id"
+                    required
+                >
+
+                    <option value="">
+                        Choose a service
+                    </option>
+
+                    <option value="1" data-price="100">
+                        Plumber - ₹100/hour
+                    </option>
+
+                    <option value="2" data-price="150">
+                        Electrician - ₹150/hour
+                    </option>
+
+                    <option value="3" data-price="100">
+                        Home Cleaning - ₹100/hour
+                    </option>
+
+                    <option value="4" data-price="200">
+                        AC Repair - ₹200/hour
+                    </option>
+
+                    <option value="5" data-price="120">
+                        Carpenter - ₹120/hour
+                    </option>
+
+                    <option value="6" data-price="200">
+                        Painting - ₹200/hour
+                    </option>
+
+                </select>
+
+
+
+                <!-- NAME -->
+
+                <label for="name">
+                    Your Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="customer_name"
+                    placeholder="Enter your name"
+                    required
+                >
+
+
+
+                <!-- PHONE -->
+
+                <label for="phone">
+                    Mobile Number
+                </label>
+
+                <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter 10-digit mobile number"
+                    pattern="[0-9]{10}"
+                    maxlength="10"
+                    required
+                >
+
+
+
+                <!-- HOURS -->
+
+                <label for="hours">
+                    Number of Hours
+                </label>
+
+                <input
+                    type="number"
+                    id="hours"
+                    name="hours"
+                    class="hours-input"
+                    min="1"
+                    max="12"
+                    value="1"
+                    required
+                >
+
+
+
+                <!-- PRICE -->
+
+                <div
+                    class="price-box"
+                    id="priceBox"
+                >
+
+                    <p>
+                        <strong>Rate:</strong>
+
+                        ₹<span id="pricePerHour">
+                            0
+                        </span>
+                        / hour
+                    </p>
+
+                    <p class="total-price">
+
+                        Total:
+
+                        ₹<span id="totalPrice">
+                            0
+                        </span>
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- ADDRESS -->
+
+                <label for="address">
+                    Service Address
+                </label>
+
+                <textarea
+                    id="address"
+                    name="address"
+                    placeholder="House number, area, city"
+                    required
+                ></textarea>
+
+
+
+                <!-- DATE + TIME -->
+
+                <div class="two-inputs">
+
+                    <div>
+
+                        <label for="date">
+                            Preferred Date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="date"
+                            name="booking_date"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div>
+
+                        <label for="time">
+                            Preferred Time
+                        </label>
+
+                        <input
+                            type="time"
+                            id="time"
+                            name="booking_time"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- MESSAGE -->
+
+                <label for="message">
+                    Additional Message
+                </label>
+
+                <textarea
+                    id="message"
+                    name="message"
+                    placeholder="Tell us about your service requirement (optional)"
+                ></textarea>
+
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    class="book-btn"
+                >
+                    Confirm Booking
+                </button>
+
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <h3>
+            HomeServe
+        </h3>
+
+        <p>
+            Your trusted home service provider.
+        </p>
+
+        <p>
+            © 2026 HomeServe. All Rights Reserved.
+        </p>
+
+    </footer>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        const serviceSelect =
+            document.getElementById("service");
+
+        const hoursInput =
+            document.getElementById("hours");
+
+        const pricePerHour =
+            document.getElementById("pricePerHour");
+
+        const totalPrice =
+            document.getElementById("totalPrice");
+
+
+        function calculatePrice() {
+
+            const selectedOption =
+                serviceSelect.options[
+                    serviceSelect.selectedIndex
+                ];
+
+            const price =
+                parseFloat(
+                    selectedOption.getAttribute("data-price")
+                ) || 0;
+
+            const hours =
+                parseInt(hoursInput.value) || 0;
+
+            const total =
+                price * hours;
+
+
+            pricePerHour.textContent =
+                price.toFixed(2);
+
+            totalPrice.textContent =
+                total.toFixed(2);
+
+        }
+
+
+        serviceSelect.addEventListener(
+            "change",
+            calculatePrice
+        );
+
+
+        hoursInput.addEventListener(
+            "input",
+            calculatePrice
+        );
+
+
+        /*
+        Set minimum booking date to today
+        */
+
+        const dateInput =
+            document.getElementById("date");
+
+        const today =
+            new Date();
+
+        const year =
+            today.getFullYear();
+
+        const month =
+            String(
+                today.getMonth() + 1
+            ).padStart(2, "0");
+
+        const day =
+            String(
+                today.getDate()
+            ).padStart(2, "0");
+
+
+        dateInput.min =
+            `${year}-${month}-${day}`;
+
+
+        /*
+        Initial price
+        */
+
+        calculatePrice();
+
+    </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const params = new URLSearchParams(window.location.search);
+    const selectedService = params.get("service");
+
+    if (!selectedService) {
+        return;
+    }
+
+    const serviceSelect = document.getElementById("service");
+
+    if (!serviceSelect) {
+        return;
+    }
+
+    const serviceName = decodeURIComponent(selectedService)
+        .trim()
+        .toLowerCase();
+
+    for (let option of serviceSelect.options) {
+
+        // "Electrician - ₹150/hour" se sirf "Electrician" lena
+        const optionName = option.text
+            .split(" - ")[0]
+            .trim()
+            .toLowerCase();
+
+        if (optionName === serviceName) {
+
+            serviceSelect.value = option.value;
+
+            // Rate aur total calculate karega
+            calculatePrice();
+
+            break;
+        }
+    }
+
+});
+</script>
+</body>
+
+</html>

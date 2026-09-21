@@ -1,0 +1,192 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f5f7fb;
+    color: #222;
+}
+
+.navbar {
+    background: #153b6d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 8%;
+    color: white;
+}
+
+.logo {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.login-btn,
+.signup-btn {
+    padding: 9px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.login-btn {
+    color: white;
+    border: 1px solid white;
+}
+
+.signup-btn {
+    color: white;
+    background: #ff7a00;
+}
+
+.login-section {
+    min-height: 620px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 45px 20px;
+}
+
+.login-box {
+    width: 100%;
+    max-width: 440px;
+    padding: 35px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 22px rgba(0, 0, 0, 0.13);
+}
+
+.login-box h1,
+.login-box > p {
+    text-align: center;
+}
+
+.login-box h1 {
+    color: #153b6d;
+    margin-bottom: 10px;
+}
+
+.login-box > p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    color: #153b6d;
+    font-weight: bold;
+    margin: 15px 0 7px;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #cbd3df;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 22px;
+    font-size: 14px;
+}
+
+.login-options a,
+.register-text a {
+    color: #ff7a00;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.remember {
+    margin: 0;
+    font-size: 14px;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 6px;
+    background: #ff7a00;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-box button:hover {
+    background: #d95f00;
+}
+
+#loginMessage {
+    color: green;
+    font-weight: bold;
+    margin-top: 16px;
+}
+
+.register-text {
+    margin-top: 20px !important;
+}
+
+footer {
+    text-align: center;
+    background: #153b6d;
+    color: white;
+    padding: 25px;
+}
+
+footer p {
+    margin-top: 8px;
+    color: #d7e8ff;
+}
+
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .nav-links {
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .login-box {
+        padding: 28px 20px;
+    }
+}
+input[type="text"],
+input[type="tel"],
+select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #cbd3df;
+    border-radius: 6px;
+    font-size: 15px;
+    background-color: white;
+}
