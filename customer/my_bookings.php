@@ -8,14 +8,16 @@ include "../config/database.php";
    CUSTOMER LOGIN CHECK
 ========================= */
 
-if (!isset($_SESSION["user_id"])) {
+/* =========================
+   CUSTOMER LOGIN CHECK
+========================= */
+
+if (!isset($_SESSION["customer_id"])) {
     header("Location: ../html/login.html");
     exit();
 }
 
-$customerId = (int) $_SESSION["user_id"];
-
-
+$customerId = (int) $_SESSION["customer_id"];
 /* =========================
    GET CUSTOMER BOOKINGS
 ========================= */

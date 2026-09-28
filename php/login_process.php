@@ -5,6 +5,10 @@ session_start();
 include "../config/database.php";
 
 
+/* =========================
+   REQUEST CHECK
+========================= */
+
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
     header("Location: ../html/login.html");
@@ -12,12 +16,22 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 
+/* =========================
+   GET LOGIN DATA
+========================= */
+
 $email = trim($_POST["email"] ?? "");
 
 $password = $_POST["password"] ?? "";
 
-$loginRole = strtolower(trim($_POST["login_role"] ?? ""));
+$loginRole = strtolower(
+    trim($_POST["login_role"] ?? "")
+);
 
+
+/* =========================
+   BASIC VALIDATION
+========================= */
 
 if ($email === "" || $password === "") {
 
@@ -29,7 +43,9 @@ if ($email === "" || $password === "") {
 }
 
 
-/* Customer, Provider and Admin are allowed */
+/* =========================
+   VALID LOGIN ROLE
+========================= */
 
 if (
     $loginRole !== "customer" &&
@@ -45,7 +61,9 @@ if (
 }
 
 
-/* Find user */
+/* =========================
+   FIND USER
+========================= */
 
 $stmt = $conn->prepare(
     "SELECT id, name, email, password, phone, role
@@ -54,12 +72,10 @@ $stmt = $conn->prepare(
      LIMIT 1"
 );
 
-
 if (!$stmt) {
 
     die("Database query failed: " . $conn->error);
 }
-
 
 $stmt->bind_param("s", $email);
 
@@ -85,9 +101,13 @@ $user = $result->fetch_assoc();
 $stmt->close();
 
 
-/* Check selected role */
+/* =========================
+   CHECK ROLE
+========================= */
 
-$userRole = strtolower(trim($user["role"]));
+$userRole = strtolower(
+    trim($user["role"])
+);
 
 
 if ($userRole !== $loginRole) {
@@ -100,7 +120,9 @@ if ($userRole !== $loginRole) {
 }
 
 
-/* Check password */
+/* =========================
+   CHECK PASSWORD
+========================= */
 
 if (!password_verify($password, $user["password"])) {
 
@@ -112,58 +134,140 @@ if (!password_verify($password, $user["password"])) {
 }
 
 
-/* Create session */
-
-$_SESSION["user_id"] = (int)$user["id"];
-
-$_SESSION["user_name"] = $user["name"];
-
-$_SESSION["user_email"] = $user["email"];
-
-$_SESSION["user_phone"] = $user["phone"];
-
-$_SESSION["user_role"] = $user["role"];
+/* =====================================================
+   IMPORTANT:
+   DO NOT DESTROY EXISTING SESSION
+   CUSTOMER + PROVIDER CAN EXIST TOGETHER
+===================================================== */
 
 
-/* Customer */
+/* =========================
+   CUSTOMER LOGIN
+========================= */
 
 if ($userRole === "customer") {
 
-    header("Location: ../customer/dashboard.php");
+    $_SESSION["customer_id"] =
+        (int) $user["id"];
 
+    $_SESSION["customer_name"] =
+        $user["name"];
+
+    $_SESSION["customer_email"] =
+        $user["email"];
+
+    $_SESSION["customer_phone"] =
+        $user["phone"];
+
+
+    /* Keep old variables for existing customer pages */
+    $_SESSION["user_id"] =
+        (int) $user["id"];
+
+    $_SESSION["user_name"] =
+        $user["name"];
+
+    $_SESSION["user_email"] =
+        $user["email"];
+
+    $_SESSION["user_phone"] =
+        $user["phone"];
+
+    $_SESSION["user_role"] =
+        "customer";
+
+
+    header("Location: ../customer/dashboard.php");
     exit();
 }
 
 
-/* Provider */
+/* =========================
+   PROVIDER LOGIN
+========================= */
 
 if ($userRole === "provider") {
 
-    header("Location: ../provider/dashboard.php");
+    $_SESSION["provider_id"] =
+        (int) $user["id"];
 
+    $_SESSION["provider_name"] =
+        $user["name"];
+
+    $_SESSION["provider_email"] =
+        $user["email"];
+
+    $_SESSION["provider_phone"] =
+        $user["phone"];
+
+
+    /* Keep old variables for existing provider pages */
+    $_SESSION["user_id"] =
+        (int) $user["id"];
+
+    $_SESSION["user_name"] =
+        $user["name"];
+
+    $_SESSION["user_email"] =
+        $user["email"];
+
+    $_SESSION["user_phone"] =
+        $user["phone"];
+
+    $_SESSION["user_role"] =
+        "provider";
+
+
+    header("Location: ../provider/dashboard.php");
     exit();
 }
 
 
-/* Admin */
+/* =========================
+   ADMIN LOGIN
+========================= */
 
 if ($userRole === "admin") {
 
-    header("Location: ../admin/dashboard.php");
+    $_SESSION["admin_id"] =
+        (int) $user["id"];
 
+    $_SESSION["admin_name"] =
+        $user["name"];
+
+    $_SESSION["admin_email"] =
+        $user["email"];
+
+
+    $_SESSION["user_id"] =
+        (int) $user["id"];
+
+    $_SESSION["user_name"] =
+        $user["name"];
+
+    $_SESSION["user_email"] =
+        $user["email"];
+
+    $_SESSION["user_phone"] =
+        $user["phone"];
+
+    $_SESSION["user_role"] =
+        "admin";
+
+
+    header("Location: ../admin/dashboard.php");
     exit();
 }
 
 
-/* Safety */
-
-session_destroy();
+/* =========================
+   SAFETY
+========================= */
 
 die("
     <h2>Login Failed</h2>
     <p>Invalid account role.</p>
     <a href='../html/login.html'>Try Again</a>
 ");
-
 
 ?>

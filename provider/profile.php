@@ -1,555 +1,866 @@
 <?php
 
 session_start();
+
 include "../config/database.php";
 
-/* Check provider login */
-if (!isset($_SESSION["user_id"])) {
-    header("Location: ../html/login.html");
+
+/* =========================
+   PROVIDER LOGIN CHECK
+========================= */
+
+if (!isset($_SESSION["provider_id"])) {
+
+    header(
+        "Location: ../html/provider_login.html"
+    );
+
     exit();
 }
 
-$userId = (int) $_SESSION["user_id"];
+
+$providerUserId =
+    (int) $_SESSION["provider_id"];
 
 
-/* Get provider basic information */
+/* =========================
+   GET PROVIDER BASIC INFO
+========================= */
+
 $userQuery = $conn->prepare(
-    "SELECT name, email, phone
+    "SELECT id, name, email, phone
      FROM users
-     WHERE id = ? AND role = 'provider'"
+     WHERE id = ?
+       AND role = 'provider'
+     LIMIT 1"
 );
 
-$userQuery->bind_param("i", $userId);
-$userQuery->execute();
 
-$userResult = $userQuery->get_result();
+if (!$userQuery) {
 
-if ($userResult->num_rows === 0) {
-    die("Provider account not found.");
+    die(
+        "User query failed: "
+        . $conn->error
+    );
 }
 
-$user = $userResult->fetch_assoc();
+
+$userQuery->bind_param(
+    "i",
+    $providerUserId
+);
+
+$userQuery->execute();
+
+$userResult =
+    $userQuery->get_result();
 
 
-/* Get all services */
+if ($userResult->num_rows === 0) {
+
+    unset($_SESSION["provider_id"]);
+
+    header(
+        "Location: ../html/provider_login.html"
+    );
+
+    exit();
+}
+
+
+$user =
+    $userResult->fetch_assoc();
+
+
+$userQuery->close();
+
+
+/* =========================
+   GET SERVICES
+========================= */
+
 $services = $conn->query(
     "SELECT id, name
      FROM services
      ORDER BY name ASC"
 );
 
+
 if (!$services) {
-    die("Services query failed: " . $conn->error);
+
+    die(
+        "Services query failed: "
+        . $conn->error
+    );
 }
 
 
-/* Save provider profile */
+/* =========================
+   SAVE PROFILE
+========================= */
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $serviceId = isset($_POST["service_id"])
-        ? (int) $_POST["service_id"]
-        : 0;
 
-    $experience = trim($_POST["experience"] ?? "");
-    $location = trim($_POST["location"] ?? "");
-    $about = trim($_POST["about"] ?? "");
+    $serviceId =
+        isset($_POST["service_id"])
+            ? (int) $_POST["service_id"]
+            : 0;
 
 
-    /* Validation */
+    $experience =
+        trim(
+            $_POST["experience"] ?? ""
+        );
+
+
+    $location =
+        trim(
+            $_POST["location"] ?? ""
+        );
+
+
+    $about =
+        trim(
+            $_POST["about"] ?? ""
+        );
+
+
+    /* =========================
+       VALIDATION
+    ========================= */
 
     if ($serviceId <= 0) {
 
-        $error = "Please select a service.";
+        $error =
+            "Please select a service.";
 
     } elseif ($experience === "") {
 
-        $error = "Please enter your experience.";
+        $error =
+            "Please enter your experience.";
 
     } elseif ($location === "") {
 
-        $error = "Please enter your service location.";
+        $error =
+            "Please enter your service location.";
 
     } else {
 
-        /* Check if provider profile already exists */
+
+        /* =========================
+           CHECK EXISTING PROFILE
+        ========================= */
 
         $check = $conn->prepare(
             "SELECT id
              FROM providers
-             WHERE user_id = ?"
+             WHERE user_id = ?
+             LIMIT 1"
         );
 
-        $check->bind_param("i", $userId);
-        $check->execute();
 
-        $checkResult = $check->get_result();
+        if (!$check) {
+
+            $error =
+                "Profile check failed: "
+                . $conn->error;
+
+        } else {
 
 
-        /* UPDATE existing profile */
-
-        if ($checkResult->num_rows > 0) {
-
-            $update = $conn->prepare(
-                "UPDATE providers
-                 SET service_id = ?,
-                     experience = ?,
-                     location = ?,
-                     about = ?,
-                     status = 'pending'
-                 WHERE user_id = ?"
+            $check->bind_param(
+                "i",
+                $providerUserId
             );
 
-            $update->bind_param(
-                "isssi",
-                $serviceId,
-                $experience,
-                $location,
-                $about,
-                $userId
-            );
+            $check->execute();
+
+            $checkResult =
+                $check->get_result();
 
 
-            if ($update->execute()) {
+            /* =========================
+               UPDATE PROFILE
+            ========================= */
 
-                header("Location: profile.php?saved=1");
-                exit();
-
-            } else {
-
-                $error = "Provider profile could not be updated: "
-                       . $update->error;
-            }
-
-        }
+            if ($checkResult->num_rows > 0) {
 
 
-        /* INSERT new profile */
-
-        else {
-
-            $insert = $conn->prepare(
-                "INSERT INTO providers
-                 (user_id, service_id, experience, location, about, status)
-                 VALUES (?, ?, ?, ?, ?, 'pending')"
-            );
-
-
-            if (!$insert) {
-
-                $error = "Insert preparation failed: "
-                       . $conn->error;
-
-            } else {
-
-                $insert->bind_param(
-                    "iisss",
-                    $userId,
-                    $serviceId,
-                    $experience,
-                    $location,
-                    $about
+                $update = $conn->prepare(
+                    "UPDATE providers
+                     SET service_id = ?,
+                         experience = ?,
+                         location = ?,
+                         about = ?,
+                         status = 'pending'
+                     WHERE user_id = ?"
                 );
 
 
-                if ($insert->execute()) {
+                if (!$update) {
 
-                    header("Location: profile.php?saved=1");
-                    exit();
+                    $error =
+                        "Update preparation failed: "
+                        . $conn->error;
 
                 } else {
 
-                    $error = "Provider profile could not be created: "
-                           . $insert->error;
+
+                    $update->bind_param(
+                        "isssi",
+                        $serviceId,
+                        $experience,
+                        $location,
+                        $about,
+                        $providerUserId
+                    );
+
+
+                    if ($update->execute()) {
+
+                        $update->close();
+
+                        $check->close();
+
+                        header(
+                            "Location: profile.php?saved=1"
+                        );
+
+                        exit();
+
+                    } else {
+
+                        $error =
+                            "Provider profile could not be updated: "
+                            . $update->error;
+                    }
+
+
+                    $update->close();
+                }
+
+
+            }
+
+            /* =========================
+               CREATE PROFILE
+            ========================= */
+
+            else {
+
+
+                $insert = $conn->prepare(
+                    "INSERT INTO providers
+                    (
+                        user_id,
+                        service_id,
+                        experience,
+                        location,
+                        about,
+                        status
+                    )
+                    VALUES (?, ?, ?, ?, ?, 'pending')"
+                );
+
+
+                if (!$insert) {
+
+                    $error =
+                        "Insert preparation failed: "
+                        . $conn->error;
+
+                } else {
+
+
+                    $insert->bind_param(
+                        "iisss",
+                        $providerUserId,
+                        $serviceId,
+                        $experience,
+                        $location,
+                        $about
+                    );
+
+
+                    if ($insert->execute()) {
+
+                        $insert->close();
+
+                        $check->close();
+
+                        header(
+                            "Location: profile.php?saved=1"
+                        );
+
+                        exit();
+
+                    } else {
+
+                        $error =
+                            "Provider profile could not be created: "
+                            . $insert->error;
+                    }
+
+
+                    $insert->close();
                 }
             }
+
+
+            $check->close();
         }
     }
 }
 
 
-/* Get existing provider profile */
+/* =========================
+   GET EXISTING PROFILE
+========================= */
 
 $profile = null;
 
+
 $profileQuery = $conn->prepare(
-    "SELECT service_id, experience, location, about, status
+    "SELECT
+        service_id,
+        experience,
+        location,
+        about,
+        status
      FROM providers
-     WHERE user_id = ?"
+     WHERE user_id = ?
+     LIMIT 1"
 );
 
-$profileQuery->bind_param("i", $userId);
+
+if (!$profileQuery) {
+
+    die(
+        "Profile query failed: "
+        . $conn->error
+    );
+}
+
+
+$profileQuery->bind_param(
+    "i",
+    $providerUserId
+);
+
 $profileQuery->execute();
 
-$profileResult = $profileQuery->get_result();
+$profileResult =
+    $profileQuery->get_result();
+
 
 if ($profileResult->num_rows > 0) {
 
-    $profile = $profileResult->fetch_assoc();
+    $profile =
+        $profileResult->fetch_assoc();
 }
+
+
+$profileQuery->close();
 
 ?>
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Provider Profile | HomeServe</title>
+<title>
+Provider Profile | HomeServe
+</title>
 
-    <style>
 
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-            color: #222;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        nav {
-            background: #153b6d;
-            color: white;
-            padding: 18px 8%;
+body {
+    margin: 0;
 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    font-family: Arial, sans-serif;
 
-        nav strong {
-            font-size: 24px;
-        }
+    background: #f5f7fb;
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            font-weight: bold;
-        }
+    color: #222;
+}
 
-        .container {
-            width: 80%;
-            max-width: 900px;
-            margin: 50px auto;
-        }
+nav {
+    background: #153b6d;
 
-        .box {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
+    color: white;
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,0.08);
-        }
+    padding: 18px 8%;
 
-        h1 {
-            color: #153b6d;
-            margin-top: 0;
-        }
+    display: flex;
 
-        .user-info {
-            background: #f5f7fb;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
+    justify-content: space-between;
 
-        .user-info p {
-            margin: 8px 0;
-        }
+    align-items: center;
+}
 
-        label {
-            display: block;
-            margin-top: 20px;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
+nav strong {
+    font-size: 24px;
+}
 
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 13px;
+nav a {
+    color: white;
 
-            border: 1px solid #d1d5db;
-            border-radius: 7px;
+    text-decoration: none;
 
-            font-size: 16px;
-        }
+    margin-left: 20px;
 
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
+    font-weight: bold;
+}
 
-        button {
-            margin-top: 25px;
+.container {
+    width: 80%;
 
-            background: #198754;
-            color: white;
+    max-width: 900px;
 
-            border: none;
+    margin: 50px auto;
+}
 
-            padding: 14px 25px;
+.box {
+    background: white;
 
-            border-radius: 7px;
+    padding: 40px;
 
-            font-size: 16px;
-            font-weight: bold;
+    border-radius: 12px;
 
-            cursor: pointer;
-        }
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.08);
+}
 
-        button:hover {
-            background: #157347;
-        }
+h1 {
+    color: #153b6d;
 
-        .success {
-            background: #d1e7dd;
-            color: #0f5132;
+    margin-top: 0;
+}
 
-            padding: 15px;
+.user-info {
+    background: #f5f7fb;
 
-            border-radius: 7px;
+    padding: 20px;
 
-            margin-bottom: 20px;
-        }
+    border-radius: 8px;
 
-        .error {
-            background: #f8d7da;
-            color: #842029;
+    margin-bottom: 30px;
+}
 
-            padding: 15px;
+.user-info p {
+    margin: 8px 0;
+}
 
-            border-radius: 7px;
+label {
+    display: block;
 
-            margin-bottom: 20px;
-        }
+    margin-top: 20px;
 
-        .status {
-            display: inline-block;
+    margin-bottom: 8px;
 
-            margin-top: 10px;
+    font-weight: bold;
+}
 
-            padding: 8px 15px;
+input,
+select,
+textarea {
+    width: 100%;
 
-            border-radius: 20px;
+    padding: 13px;
 
-            background: #fff3cd;
-            color: #856404;
+    border: 1px solid #d1d5db;
 
-            font-weight: bold;
-        }
+    border-radius: 7px;
 
-    </style>
+    font-size: 16px;
+}
+
+textarea {
+    min-height: 120px;
+
+    resize: vertical;
+}
+
+button {
+    margin-top: 25px;
+
+    background: #198754;
+
+    color: white;
+
+    border: none;
+
+    padding: 14px 25px;
+
+    border-radius: 7px;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #157347;
+}
+
+.success {
+    background: #d1e7dd;
+
+    color: #0f5132;
+
+    padding: 15px;
+
+    border-radius: 7px;
+
+    margin-bottom: 20px;
+}
+
+.error {
+    background: #f8d7da;
+
+    color: #842029;
+
+    padding: 15px;
+
+    border-radius: 7px;
+
+    margin-bottom: 20px;
+}
+
+.status {
+    display: inline-block;
+
+    margin-top: 10px;
+
+    padding: 8px 15px;
+
+    border-radius: 20px;
+
+    background: #fff3cd;
+
+    color: #856404;
+
+    font-weight: bold;
+}
+
+</style>
 
 </head>
 
+
 <body>
+
 
 <nav>
 
-    <strong>HomeServe - Provider</strong>
+<strong>
+HomeServe - Provider
+</strong>
 
-    <div>
 
-        <a href="dashboard.php">Dashboard</a>
+<div>
 
-        <a href="profile.php">Profile</a>
+<a href="dashboard.php">
+Dashboard
+</a>
 
-        <a href="../php/logout.php">Logout</a>
+<a href="profile.php">
+Profile
+</a>
 
-    </div>
+<a href="../php/logout.php?role=provider">
+Logout
+</a>
+
+</div>
 
 </nav>
 
 
 <div class="container">
 
-    <div class="box">
 
-        <h1>Provider Profile</h1>
-
-        <p>
-            Complete your provider profile so customers can book your service.
-        </p>
+<div class="box">
 
 
-        <?php if (isset($_GET["saved"])) { ?>
-
-            <div class="success">
-                Provider profile saved successfully!
-            </div>
-
-        <?php } ?>
+<h1>
+Provider Profile
+</h1>
 
 
-        <?php if (isset($error)) { ?>
-
-            <div class="error">
-                <?php echo htmlspecialchars($error); ?>
-            </div>
-
-        <?php } ?>
+<p>
+Complete your provider profile so customers can book your service.
+</p>
 
 
-        <div class="user-info">
+<?php if (isset($_GET["saved"])) { ?>
 
-            <p>
-                <strong>Name:</strong>
-                <?php echo htmlspecialchars($user["name"]); ?>
-            </p>
+<div class="success">
 
-            <p>
-                <strong>Email:</strong>
-                <?php echo htmlspecialchars($user["email"]); ?>
-            </p>
-
-            <p>
-                <strong>Phone:</strong>
-                <?php echo htmlspecialchars($user["phone"]); ?>
-            </p>
-
-            <?php if ($profile) { ?>
-
-                <p>
-
-                    <strong>Profile Status:</strong>
-
-                    <span class="status">
-
-                        <?php
-                        echo ucfirst(
-                            htmlspecialchars($profile["status"])
-                        );
-                        ?>
-
-                    </span>
-
-                </p>
-
-            <?php } ?>
-
-        </div>
-
-
-        <form method="POST" action="profile.php">
-
-
-            <label for="service_id">
-                Service You Provide
-            </label>
-
-            <select name="service_id"
-                    id="service_id"
-                    required>
-
-                <option value="">
-                    Select your service
-                </option>
-
-
-                <?php while ($service = $services->fetch_assoc()) { ?>
-
-                    <option
-                        value="<?php echo $service["id"]; ?>"
-
-                        <?php
-                        if (
-                            $profile &&
-                            $profile["service_id"] == $service["id"]
-                        ) {
-                            echo "selected";
-                        }
-                        ?>
-                    >
-
-                        <?php
-                        echo htmlspecialchars(
-                            $service["name"]
-                        );
-                        ?>
-
-                    </option>
-
-                <?php } ?>
-
-            </select>
-
-
-            <label for="experience">
-                Experience
-            </label>
-
-            <input
-                type="text"
-                name="experience"
-                id="experience"
-                placeholder="Example: 3 years"
-
-                value="<?php
-                    echo $profile
-                        ? htmlspecialchars($profile["experience"])
-                        : "";
-                ?>"
-
-                required
-            >
-
-
-            <label for="location">
-                Service Location
-            </label>
-
-            <input
-                type="text"
-                name="location"
-                id="location"
-                placeholder="Example: Okhla, Delhi"
-
-                value="<?php
-                    echo $profile
-                        ? htmlspecialchars($profile["location"])
-                        : "";
-                ?>"
-
-                required
-            >
-
-
-            <label for="about">
-                About Your Service
-            </label>
-
-            <textarea
-                name="about"
-                id="about"
-                placeholder="Tell customers about your service..."
-            ><?php
-                echo $profile
-                    ? htmlspecialchars($profile["about"])
-                    : "";
-            ?></textarea>
-
-
-            <button type="submit">
-                Save Provider Profile
-            </button>
-
-
-        </form>
-
-    </div>
+Provider profile saved successfully!
 
 </div>
+
+<?php } ?>
+
+
+<?php if (isset($error)) { ?>
+
+<div class="error">
+
+<?php
+echo htmlspecialchars($error);
+?>
+
+</div>
+
+<?php } ?>
+
+
+<div class="user-info">
+
+
+<p>
+
+<strong>Name:</strong>
+
+<?php
+echo htmlspecialchars(
+    $user["name"]
+);
+?>
+
+</p>
+
+
+<p>
+
+<strong>Email:</strong>
+
+<?php
+echo htmlspecialchars(
+    $user["email"]
+);
+?>
+
+</p>
+
+
+<p>
+
+<strong>Phone:</strong>
+
+<?php
+echo htmlspecialchars(
+    $user["phone"]
+);
+?>
+
+</p>
+
+
+<?php if ($profile) { ?>
+
+<p>
+
+<strong>
+Profile Status:
+</strong>
+
+
+<span class="status">
+
+<?php
+echo ucfirst(
+    htmlspecialchars(
+        $profile["status"]
+    )
+);
+?>
+
+</span>
+
+</p>
+
+<?php } ?>
+
+
+</div>
+
+
+<form
+    method="POST"
+    action="profile.php"
+>
+
+
+<label for="service_id">
+
+Service You Provide
+
+</label>
+
+
+<select
+    name="service_id"
+    id="service_id"
+    required
+>
+
+
+<option value="">
+
+Select your service
+
+</option>
+
+
+<?php while (
+    $service = $services->fetch_assoc()
+) { ?>
+
+
+<option
+    value="<?php
+        echo (int) $service["id"];
+    ?>"
+
+    <?php
+
+    if (
+        $profile &&
+        $profile["service_id"]
+        == $service["id"]
+    ) {
+
+        echo "selected";
+    }
+
+    ?>
+>
+
+<?php
+echo htmlspecialchars(
+    $service["name"]
+);
+?>
+
+</option>
+
+
+<?php } ?>
+
+
+</select>
+
+
+<label for="experience">
+
+Experience
+
+</label>
+
+
+<input
+    type="text"
+    name="experience"
+    id="experience"
+
+    placeholder="Example: 3 years"
+
+    value="<?php
+
+        echo $profile
+            ? htmlspecialchars(
+                $profile["experience"]
+            )
+            : "";
+
+    ?>"
+
+    required
+>
+
+
+<label for="location">
+
+Service Location
+
+</label>
+
+
+<input
+    type="text"
+    name="location"
+    id="location"
+
+    placeholder="Example: Okhla, Delhi"
+
+    value="<?php
+
+        echo $profile
+            ? htmlspecialchars(
+                $profile["location"]
+            )
+            : "";
+
+    ?>"
+
+    required
+>
+
+
+<label for="about">
+
+About Your Service
+
+</label>
+
+
+<textarea
+    name="about"
+    id="about"
+    placeholder="Tell customers about your service..."
+><?php
+
+echo $profile
+    ? htmlspecialchars(
+        $profile["about"]
+    )
+    : "";
+
+?></textarea>
+
+
+<button type="submit">
+
+Save Provider Profile
+
+</button>
+
+
+</form>
+
+
+</div>
+
+</div>
+
 
 </body>
 

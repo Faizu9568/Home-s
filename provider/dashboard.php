@@ -3,23 +3,51 @@
 session_start();
 include "../config/database.php";
 
+
 /* =========================
    PROVIDER LOGIN CHECK
 ========================= */
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["provider_id"])) {
     header("Location: ../html/provider_login.html");
     exit();
 }
 
-if (
-    !isset($_SESSION["user_role"]) ||
-    strtolower(trim($_SESSION["user_role"])) !== "provider"
-) {
-    die("Access denied. Provider account required.");
+$providerUserId = (int) $_SESSION["provider_id"];
+
+
+/* =========================
+   VERIFY PROVIDER ACCOUNT
+========================= */
+
+$userQuery = $conn->prepare(
+    "SELECT id, name, email, phone
+     FROM users
+     WHERE id = ?
+       AND role = 'provider'
+     LIMIT 1"
+);
+
+if (!$userQuery) {
+    die("User query failed: " . $conn->error);
 }
 
-$userId = (int) $_SESSION["user_id"];
+$userQuery->bind_param("i", $providerUserId);
+$userQuery->execute();
+
+$userResult = $userQuery->get_result();
+
+if ($userResult->num_rows === 0) {
+    unset($_SESSION["provider_id"]);
+    header("Location: ../html/provider_login.html");
+    exit();
+}
+
+$user = $userResult->fetch_assoc();
+
+$providerName = $user["name"];
+
+$userQuery->close();
 
 
 /* =========================
@@ -37,16 +65,20 @@ if (!$getProvider) {
     die("Provider query failed: " . $conn->error);
 }
 
-$getProvider->bind_param("i", $userId);
+$getProvider->bind_param("i", $providerUserId);
 $getProvider->execute();
 
 $providerResult = $getProvider->get_result();
 
+
 if ($providerResult->num_rows === 0) {
+
     $getProvider->close();
+
     header("Location: profile.php");
     exit();
 }
+
 
 $provider = $providerResult->fetch_assoc();
 
@@ -56,43 +88,18 @@ $getProvider->close();
 
 
 /* =========================
-   PROVIDER STATUS CHECK
+   PROVIDER STATUS
 ========================= */
 
-if (strtolower(trim($provider["status"])) !== "active") {
+if (
+    strtolower(trim($provider["status"])) !== "active"
+) {
     die("Your provider account is not active.");
 }
 
 
 /* =========================
-   GET PROVIDER NAME
-========================= */
-
-$nameQuery = $conn->prepare(
-    "SELECT name
-     FROM users
-     WHERE id = ?
-     LIMIT 1"
-);
-
-if (!$nameQuery) {
-    die("Name query failed: " . $conn->error);
-}
-
-$nameQuery->bind_param("i", $userId);
-$nameQuery->execute();
-
-$nameResult = $nameQuery->get_result();
-$user = $nameResult->fetch_assoc();
-
-$providerName = $user["name"] ?? "Provider";
-
-$nameQuery->close();
-
-
-/* =========================
    PENDING BOOKINGS
-   ALL ACTIVE PROVIDERS
 ========================= */
 
 $pendingQuery = $conn->prepare(
@@ -127,9 +134,11 @@ $pendingQuery = $conn->prepare(
      ORDER BY bookings.id DESC"
 );
 
+
 if (!$pendingQuery) {
     die("Pending booking query failed: " . $conn->error);
 }
+
 
 $pendingQuery->execute();
 
@@ -137,7 +146,7 @@ $pendingBookings = $pendingQuery->get_result();
 
 
 /* =========================
-   ACCEPTED / COMPLETED BOOKINGS
+   ACCEPTED / COMPLETED
 ========================= */
 
 $acceptedQuery = $conn->prepare(
@@ -167,20 +176,21 @@ $acceptedQuery = $conn->prepare(
         ON bookings.service_id = services.id
 
      WHERE bookings.provider_id = ?
-
-       AND bookings.status IN (
-           'accepted',
-           'completed'
-       )
+       AND bookings.status IN ('accepted', 'completed')
 
      ORDER BY bookings.id DESC"
 );
+
 
 if (!$acceptedQuery) {
     die("Accepted booking query failed: " . $conn->error);
 }
 
-$acceptedQuery->bind_param("i", $providerId);
+
+$acceptedQuery->bind_param(
+    "i",
+    $providerId
+);
 
 $acceptedQuery->execute();
 
@@ -196,12 +206,11 @@ $acceptedBookings = $acceptedQuery->get_result();
 
 <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>Provider Dashboard | HomeServe</title>
+
 
 <style>
 
@@ -219,6 +228,7 @@ body {
 nav {
     background: #153b6d;
     color: white;
+
     padding: 18px 8%;
 
     display: flex;
@@ -233,13 +243,20 @@ nav strong {
 nav a {
     color: white;
     text-decoration: none;
+
     margin-left: 20px;
+
     font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
 }
 
 .container {
     width: 85%;
     max-width: 1200px;
+
     margin: 40px auto;
 }
 
@@ -250,42 +267,61 @@ h2 {
 
 .welcome {
     background: white;
+
     padding: 25px;
+
     border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.08);
+
     margin-bottom: 30px;
 }
 
 .booking-card {
     background: white;
+
     padding: 25px;
+
     margin-bottom: 20px;
+
     border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.08);
 }
 
 .service-name {
     font-size: 24px;
+
     font-weight: bold;
+
     color: #153b6d;
+
     margin-bottom: 18px;
 }
 
 .info {
     margin: 10px 0;
+
     line-height: 1.5;
 }
 
 .info strong {
     display: inline-block;
+
     width: 120px;
 }
 
 .status {
     display: inline-block;
+
     margin-top: 12px;
+
     padding: 8px 15px;
+
     border-radius: 20px;
+
     font-weight: bold;
 }
 
@@ -310,12 +346,19 @@ h2 {
 
 .btn {
     display: inline-block;
+
     padding: 11px 20px;
+
     border-radius: 6px;
+
     color: white;
+
     text-decoration: none;
+
     font-weight: bold;
+
     margin-right: 10px;
+
     cursor: pointer;
 }
 
@@ -337,10 +380,16 @@ h2 {
 
 .empty {
     background: white;
+
     padding: 35px;
+
     text-align: center;
+
     border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.08);
+
     color: #666;
 }
 
@@ -348,7 +397,9 @@ h2 {
 
 </head>
 
+
 <body>
+
 
 <nav>
 
@@ -356,11 +407,17 @@ h2 {
 
 <div>
 
-<a href="dashboard.php">Dashboard</a>
+<a href="dashboard.php">
+    Dashboard
+</a>
 
-<a href="profile.php">Profile</a>
+<a href="profile.php">
+    Profile
+</a>
 
-<a href="../php/logout.php">Logout</a>
+<a href="../php/logout.php?role=provider">
+    Logout
+</a>
 
 </div>
 
@@ -392,7 +449,9 @@ Manage customer service bookings from your provider dashboard.
      NEW BOOKINGS
 ========================= -->
 
-<h2>New Service Bookings</h2>
+<h2>
+New Service Bookings
+</h2>
 
 
 <?php if ($pendingBookings->num_rows > 0) { ?>
@@ -407,7 +466,9 @@ Manage customer service bookings from your provider dashboard.
 <div class="service-name">
 
 <?php
-echo htmlspecialchars($booking["service_name"]);
+echo htmlspecialchars(
+    $booking["service_name"]
+);
 ?>
 
 </div>
@@ -419,7 +480,7 @@ echo htmlspecialchars($booking["service_name"]);
 
 <?php
 echo htmlspecialchars(
-    $booking["customer_name"] ?? "Customer"
+    $booking["customer_name"]
 );
 ?>
 
@@ -431,7 +492,9 @@ echo htmlspecialchars(
 <strong>Date:</strong>
 
 <?php
-echo htmlspecialchars($booking["booking_date"]);
+echo htmlspecialchars(
+    $booking["booking_date"]
+);
 ?>
 
 </div>
@@ -442,7 +505,9 @@ echo htmlspecialchars($booking["booking_date"]);
 <strong>Time:</strong>
 
 <?php
-echo htmlspecialchars($booking["booking_time"]);
+echo htmlspecialchars(
+    $booking["booking_time"]
+);
 ?>
 
 </div>
@@ -480,7 +545,9 @@ echo number_format(
 <strong>Address:</strong>
 
 <?php
-echo htmlspecialchars($booking["address"]);
+echo htmlspecialchars(
+    $booking["address"]
+);
 ?>
 
 </div>
@@ -500,9 +567,7 @@ echo htmlspecialchars(
 
 
 <span class="status pending">
-
 Pending
-
 </span>
 
 
@@ -511,7 +576,9 @@ Pending
 
 <a
     class="btn accept"
-    href="booking.php?action=accept&id=<?php echo (int) $booking["id"]; ?>"
+    href="booking.php?action=accept&id=<?php
+        echo (int) $booking["id"];
+    ?>"
 >
     Accept Booking
 </a>
@@ -519,8 +586,12 @@ Pending
 
 <a
     class="btn reject"
-    href="booking.php?action=reject&id=<?php echo (int) $booking["id"]; ?>"
-    onclick="return confirm('Are you sure you want to reject this booking?');"
+    href="booking.php?action=reject&id=<?php
+        echo (int) $booking["id"];
+    ?>"
+    onclick="return confirm(
+        'Are you sure you want to reject this booking?'
+    );"
 >
     Reject Booking
 </a>
@@ -540,7 +611,9 @@ Pending
 
 <div class="empty">
 
-<h3>No New Bookings</h3>
+<h3>
+No New Bookings
+</h3>
 
 <p>
 There are currently no pending service bookings.
@@ -553,10 +626,12 @@ There are currently no pending service bookings.
 
 
 <!-- =========================
-     MY BOOKINGS
+     ACCEPTED BOOKINGS
 ========================= -->
 
-<h2>My Accepted Bookings</h2>
+<h2>
+My Accepted Bookings
+</h2>
 
 
 <?php if ($acceptedBookings->num_rows > 0) { ?>
@@ -571,7 +646,9 @@ There are currently no pending service bookings.
 <div class="service-name">
 
 <?php
-echo htmlspecialchars($booking["service_name"]);
+echo htmlspecialchars(
+    $booking["service_name"]
+);
 ?>
 
 </div>
@@ -583,7 +660,7 @@ echo htmlspecialchars($booking["service_name"]);
 
 <?php
 echo htmlspecialchars(
-    $booking["customer_name"] ?? "Customer"
+    $booking["customer_name"]
 );
 ?>
 
@@ -595,7 +672,9 @@ echo htmlspecialchars(
 <strong>Date:</strong>
 
 <?php
-echo htmlspecialchars($booking["booking_date"]);
+echo htmlspecialchars(
+    $booking["booking_date"]
+);
 ?>
 
 </div>
@@ -606,7 +685,9 @@ echo htmlspecialchars($booking["booking_date"]);
 <strong>Time:</strong>
 
 <?php
-echo htmlspecialchars($booking["booking_time"]);
+echo htmlspecialchars(
+    $booking["booking_time"]
+);
 ?>
 
 </div>
@@ -644,7 +725,9 @@ echo number_format(
 <strong>Address:</strong>
 
 <?php
-echo htmlspecialchars($booking["address"]);
+echo htmlspecialchars(
+    $booking["address"]
+);
 ?>
 
 </div>
@@ -663,13 +746,17 @@ echo htmlspecialchars(
 </div>
 
 
-<span
-    class="status <?php echo htmlspecialchars($booking["status"]); ?>"
->
+<span class="status
+<?php echo htmlspecialchars(
+    $booking["status"]
+); ?>
+">
 
 <?php
 echo ucfirst(
-    htmlspecialchars($booking["status"])
+    htmlspecialchars(
+        $booking["status"]
+    )
 );
 ?>
 
@@ -681,15 +768,17 @@ echo ucfirst(
 
 <div class="buttons">
 
-
 <a
     class="btn accept"
-    href="booking.php?action=complete&id=<?php echo (int) $booking["id"]; ?>"
-    onclick="return confirm('Are you sure this booking is completed?');"
+    href="booking.php?action=complete&id=<?php
+        echo (int) $booking["id"];
+    ?>"
+    onclick="return confirm(
+        'Are you sure this booking is completed?'
+    );"
 >
     Complete Booking
 </a>
-
 
 </div>
 
@@ -708,7 +797,9 @@ echo ucfirst(
 
 <div class="empty">
 
-<h3>No Accepted Bookings</h3>
+<h3>
+No Accepted Bookings
+</h3>
 
 <p>
 You have not accepted any booking yet.

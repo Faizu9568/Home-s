@@ -6,107 +6,119 @@ include "../config/database.php";
 
 
 /* =========================
-   LOGIN CHECK
+   PROVIDER LOGIN CHECK
 ========================= */
 
-if (!isset($_SESSION["user_id"])) {
-    header("Location: ../html/provider_login.html");
+if (!isset($_SESSION["provider_id"])) {
+
+    header(
+        "Location: ../html/provider_login.html"
+    );
+
     exit();
 }
 
-$userId = (int) $_SESSION["user_id"];
+
+$providerUserId =
+    (int) $_SESSION["provider_id"];
 
 
 /* =========================
-   VERIFY USER FROM DATABASE
+   VERIFY PROVIDER
 ========================= */
 
 $userQuery = $conn->prepare(
-    "SELECT id, name, email, role
+    "SELECT id
      FROM users
      WHERE id = ?
+       AND role = 'provider'
      LIMIT 1"
 );
+
 
 if (!$userQuery) {
     die("User query failed: " . $conn->error);
 }
 
-$userQuery->bind_param("i", $userId);
+
+$userQuery->bind_param(
+    "i",
+    $providerUserId
+);
+
 $userQuery->execute();
 
-$userResult = $userQuery->get_result();
+$userResult =
+    $userQuery->get_result();
+
 
 if ($userResult->num_rows === 0) {
-    $userQuery->close();
-    session_destroy();
 
-    header("Location: ../html/provider_login.html");
-    exit();
+    die("Provider account not found.");
 }
 
-$user = $userResult->fetch_assoc();
 
 $userQuery->close();
 
 
 /* =========================
-   PROVIDER ROLE CHECK
+   GET PROVIDER ID
 ========================= */
 
-$userRole = strtolower(trim($user["role"] ?? ""));
-
-if ($userRole !== "provider") {
-    die("Access denied. Provider account required.");
-}
-
-
-/* =========================
-   GET PROVIDER PROFILE
-========================= */
-
-$getProvider = $conn->prepare(
+$providerQuery = $conn->prepare(
     "SELECT id, status
      FROM providers
      WHERE user_id = ?
      LIMIT 1"
 );
 
-if (!$getProvider) {
+
+if (!$providerQuery) {
     die("Provider query failed: " . $conn->error);
 }
 
-$getProvider->bind_param("i", $userId);
 
-$getProvider->execute();
+$providerQuery->bind_param(
+    "i",
+    $providerUserId
+);
 
-$providerResult = $getProvider->get_result();
+$providerQuery->execute();
+
+$providerResult =
+    $providerQuery->get_result();
+
 
 if ($providerResult->num_rows === 0) {
 
-    $getProvider->close();
-
-    die("Provider profile not found.");
+    die(
+        "Provider profile not found. Please complete your profile first."
+    );
 }
+
 
 $provider = $providerResult->fetch_assoc();
 
-$providerId = (int) $provider["id"];
+$providerId =
+    (int) $provider["id"];
 
-$getProvider->close();
+
+$providerQuery->close();
 
 
 /* =========================
-   PROVIDER STATUS CHECK
+   PROVIDER ACTIVE CHECK
 ========================= */
 
-$providerStatus = strtolower(
-    trim($provider["status"] ?? "")
-);
+if (
+    strtolower(
+        trim($provider["status"])
+    ) !== "active"
+) {
 
-if ($providerStatus !== "active") {
-
-    die("Your provider account is not active.");
+    die(
+        "Your provider account is not active."
+    );
 }
 
 
@@ -114,11 +126,17 @@ if ($providerStatus !== "active") {
    GET ACTION
 ========================= */
 
-$action = strtolower(
-    trim($_GET["action"] ?? "")
-);
+$action =
+    strtolower(
+        trim($_GET["action"] ?? "")
+    );
 
-$bookingId = (int) ($_GET["id"] ?? 0);
+
+$bookingId =
+    isset($_GET["id"])
+        ? (int) $_GET["id"]
+        : 0;
+
 
 if ($bookingId <= 0) {
 
@@ -126,66 +144,14 @@ if ($bookingId <= 0) {
 }
 
 
-/* ==================================================
+/* =====================================================
    ACCEPT BOOKING
-================================================== */
+===================================================== */
 
 if ($action === "accept") {
 
-    $checkBooking = $conn->prepare(
-        "SELECT
-            id,
-            service_id,
-            provider_id,
-            status
-         FROM bookings
-         WHERE id = ?
-         LIMIT 1"
-    );
 
-    if (!$checkBooking) {
-        die("Booking check failed: " . $conn->error);
-    }
-
-    $checkBooking->bind_param(
-        "i",
-        $bookingId
-    );
-
-    $checkBooking->execute();
-
-    $bookingResult = $checkBooking->get_result();
-
-    if ($bookingResult->num_rows === 0) {
-
-        $checkBooking->close();
-
-        die("Booking not found.");
-    }
-
-    $booking = $bookingResult->fetch_assoc();
-
-    $checkBooking->close();
-
-
-    if ($booking["status"] !== "pending") {
-
-        die(
-            "Booking cannot be accepted because its current status is: " .
-            htmlspecialchars($booking["status"])
-        );
-    }
-
-
-    if ($booking["provider_id"] !== null) {
-
-        die(
-            "Booking is already assigned to another provider."
-        );
-    }
-
-
-    $acceptQuery = $conn->prepare(
+    $update = $conn->prepare(
         "UPDATE bookings
          SET provider_id = ?,
              status = 'accepted'
@@ -194,74 +160,72 @@ if ($action === "accept") {
            AND provider_id IS NULL"
     );
 
-    if (!$acceptQuery) {
-        die("Accept query failed: " . $conn->error);
+
+    if (!$update) {
+
+        die(
+            "Accept query failed: "
+            . $conn->error
+        );
     }
 
-    $acceptQuery->bind_param(
+
+    $update->bind_param(
         "ii",
         $providerId,
         $bookingId
     );
 
 
-    if (!$acceptQuery->execute()) {
-
-        $error = $acceptQuery->error;
-
-        $acceptQuery->close();
+    if (!$update->execute()) {
 
         die(
-            "Database error while accepting booking:<br><br>" .
-            htmlspecialchars($error)
+            "Could not accept booking: "
+            . $update->error
         );
     }
 
 
-    if ($acceptQuery->affected_rows === 1) {
-
-        $acceptQuery->close();
-
-        header("Location: dashboard.php");
-
-        exit();
-
-    } else {
-
-        $acceptQuery->close();
-
-        die(
-            "Booking could not be accepted.<br><br>" .
-            "The booking may have already been accepted by another provider."
-        );
-    }
-}
+    $update->close();
 
 
-/* ==================================================
-   REJECT BOOKING
-================================================== */
-
-if ($action === "reject") {
-
-    /*
-       Rejection is not global because
-       all active providers can see pending bookings.
-    */
-
-    header("Location: dashboard.php");
+    header(
+        "Location: dashboard.php"
+    );
 
     exit();
 }
 
 
-/* ==================================================
+/* =====================================================
+   REJECT BOOKING
+===================================================== */
+
+if ($action === "reject") {
+
+    /*
+     * Your current system does not have
+     * a separate rejected status.
+     *
+     * Therefore we simply return to dashboard.
+     */
+
+    header(
+        "Location: dashboard.php"
+    );
+
+    exit();
+}
+
+
+/* =====================================================
    COMPLETE BOOKING
-================================================== */
+===================================================== */
 
 if ($action === "complete") {
 
-    $completeQuery = $conn->prepare(
+
+    $update = $conn->prepare(
         "UPDATE bookings
          SET status = 'completed'
          WHERE id = ?
@@ -269,52 +233,40 @@ if ($action === "complete") {
            AND status = 'accepted'"
     );
 
-    if (!$completeQuery) {
+
+    if (!$update) {
+
         die(
-            "Complete query failed: " .
-            $conn->error
+            "Complete query failed: "
+            . $conn->error
         );
     }
 
 
-    $completeQuery->bind_param(
+    $update->bind_param(
         "ii",
         $bookingId,
         $providerId
     );
 
 
-    if (!$completeQuery->execute()) {
-
-        $error = $completeQuery->error;
-
-        $completeQuery->close();
+    if (!$update->execute()) {
 
         die(
-            "Database error while completing booking:<br><br>" .
-            htmlspecialchars($error)
+            "Could not complete booking: "
+            . $update->error
         );
     }
 
 
-    if ($completeQuery->affected_rows === 1) {
+    $update->close();
 
-        $completeQuery->close();
 
-        header("Location: dashboard.php");
+    header(
+        "Location: dashboard.php"
+    );
 
-        exit();
-
-    } else {
-
-        $completeQuery->close();
-
-        die(
-            "Booking could not be completed.<br><br>" .
-            "The booking may not belong to this provider " .
-            "or it is not currently accepted."
-        );
-    }
+    exit();
 }
 
 
