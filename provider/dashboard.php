@@ -213,184 +213,711 @@ $acceptedBookings = $acceptedQuery->get_result();
 
 
 <style>
+/* =====================================
+   HOMESERVE — PROVIDER DASHBOARD UI
+===================================== */
 
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f5f7fb;
-    color: #222;
+:root {
+    --primary: #173f73;
+    --primary-dark: #102f57;
+    --primary-light: #eaf2ff;
+    --orange: #ff7900;
+    --orange-dark: #e66d00;
+    --green: #198754;
+    --red: #dc3545;
+    --text: #243247;
+    --muted: #718096;
+    --border: #e7edf5;
+    --surface: #ffffff;
 }
 
-nav {
-    background: #153b6d;
-    color: white;
+html {
+    scroll-behavior: smooth;
+}
 
-    padding: 18px 8%;
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 0% 0%,
+            rgba(45, 104, 180, 0.09),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 100% 30%,
+            rgba(255, 121, 0, 0.07),
+            transparent 25%
+        ),
+        #f4f7fc;
+
+    line-height: 1.6;
+}
+
+/* =====================================
+   NAVIGATION BAR
+===================================== */
+
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    min-height: 76px;
+    padding: 15px 6%;
 
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
+
+    background: rgba(23, 63, 115, 0.97);
+    color: white;
+
+    box-shadow: 0 5px 25px rgba(16, 47, 87, 0.16);
+    backdrop-filter: blur(12px);
+
+    animation: navAppear 0.5s ease both;
 }
 
 nav strong {
-    font-size: 24px;
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
 }
 
 nav a {
+    position: relative;
+
+    display: inline-block;
+    margin-left: 18px;
+
     color: white;
     text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
 
-    margin-left: 20px;
-
-    font-weight: bold;
+    transition: color 0.25s ease;
 }
 
-nav a:hover {
-    text-decoration: underline;
+nav a:not(:last-child):hover {
+    color: #ffd4ad;
 }
+
+nav a:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: -7px;
+
+    width: 0;
+    height: 2px;
+
+    background: #ffb16b;
+    transition: width 0.25s ease;
+}
+
+nav a:not(:last-child):hover::after {
+    width: 100%;
+}
+
+/* Logout button */
+
+nav a[href*="logout"] {
+    padding: 10px 17px;
+    margin-left: 18px;
+
+    background: var(--orange);
+    border-radius: 9px;
+
+    box-shadow: 0 4px 12px rgba(255, 121, 0, 0.15);
+
+    transition:
+        transform 0.25s ease,
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+nav a[href*="logout"]:hover {
+    color: white;
+    background: var(--orange-dark);
+    transform: translateY(-2px);
+
+    box-shadow: 0 7px 18px rgba(255, 121, 0, 0.28);
+}
+
+/* =====================================
+   MAIN CONTAINER
+===================================== */
 
 .container {
-    width: 85%;
-    max-width: 1200px;
-
-    margin: 40px auto;
+    width: min(1200px, 92%);
+    margin: 38px auto 60px;
 }
 
-h1,
-h2 {
-    color: #153b6d;
-}
+/* =====================================
+   WELCOME SECTION
+===================================== */
 
 .welcome {
-    background: white;
+    position: relative;
+    overflow: hidden;
 
-    padding: 25px;
+    padding: 35px 38px;
+    margin-bottom: 38px;
 
-    border-radius: 12px;
+    background:
+        linear-gradient(
+            120deg,
+            #ffffff 0%,
+            #f4f8ff 65%,
+            #fff1e3 100%
+        );
 
-    box-shadow:
-        0 5px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 22px;
 
-    margin-bottom: 30px;
+    box-shadow: 0 12px 35px rgba(23, 63, 115, 0.07);
+
+    animation: fadeUp 0.55s ease both;
 }
+
+.welcome::after {
+    content: "🏡";
+
+    position: absolute;
+    right: 45px;
+    top: 50%;
+
+    font-size: 75px;
+    opacity: 0.9;
+
+    transform: translateY(-50%);
+    animation: floatHome 3s ease-in-out infinite;
+}
+
+.welcome h1 {
+    position: relative;
+    z-index: 1;
+
+    margin-bottom: 8px;
+    padding-right: 95px;
+
+    color: var(--primary);
+    font-size: clamp(25px, 3vw, 35px);
+    line-height: 1.3;
+    letter-spacing: -0.7px;
+}
+
+.welcome p {
+    position: relative;
+    z-index: 1;
+
+    max-width: 620px;
+    padding-right: 75px;
+
+    color: var(--muted);
+    font-size: 15px;
+}
+
+/* =====================================
+   SECTION HEADINGS
+===================================== */
+
+h2 {
+    position: relative;
+
+    margin: 34px 0 20px;
+    padding-left: 15px;
+
+    color: var(--primary);
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+
+    animation: fadeUp 0.5s ease both;
+}
+
+h2::before {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+
+    width: 4px;
+    border-radius: 5px;
+
+    background: var(--orange);
+}
+
+/* =====================================
+   BOOKING CARDS
+===================================== */
 
 .booking-card {
-    background: white;
+    position: relative;
+    overflow: hidden;
 
-    padding: 25px;
+    padding: 28px;
+    margin-bottom: 23px;
 
-    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
 
-    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(23, 63, 115, 0.055);
 
-    box-shadow:
-        0 5px 20px rgba(0,0,0,0.08);
+    animation: fadeUp 0.55s ease both;
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
 }
+
+.booking-card::before {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 4px;
+
+    background: linear-gradient(
+        180deg,
+        var(--primary),
+        var(--orange)
+    );
+
+    transform: scaleY(0.35);
+    transform-origin: center;
+
+    transition: transform 0.3s ease;
+}
+
+.booking-card:hover {
+    transform: translateY(-5px);
+
+    border-color: #cbdcf2;
+
+    box-shadow: 0 17px 38px rgba(23, 63, 115, 0.12);
+}
+
+.booking-card:hover::before {
+    transform: scaleY(1);
+}
+
+/* Service title */
 
 .service-name {
-    font-size: 24px;
+    display: inline-block;
 
-    font-weight: bold;
+    margin-bottom: 17px;
 
-    color: #153b6d;
+    color: var(--primary);
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
 
-    margin-bottom: 18px;
+    transition: color 0.25s ease;
 }
 
-.info {
-    margin: 10px 0;
+.booking-card:hover .service-name {
+    color: var(--orange-dark);
+}
 
-    line-height: 1.5;
+/* =====================================
+   BOOKING INFORMATION
+===================================== */
+
+.info {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    margin: 12px 0;
+
+    color: #536176;
+    font-size: 14px;
+    line-height: 1.7;
+
+    overflow-wrap: anywhere;
 }
 
 .info strong {
     display: inline-block;
+    flex: 0 0 125px;
 
-    width: 120px;
+    color: #293e59;
+    font-weight: 700;
 }
 
+/* =====================================
+   STATUS BADGES
+===================================== */
+
 .status {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 
-    margin-top: 12px;
+    margin-top: 15px;
+    padding: 8px 14px;
 
-    padding: 8px 15px;
+    border-radius: 30px;
 
-    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+}
 
-    font-weight: bold;
+.status::before {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+    background: currentColor;
 }
 
 .pending {
-    background: #fff3cd;
-    color: #856404;
+    color: #946200;
+    background: #fff4cf;
+    border: 1px solid #ffe6a0;
 }
 
 .accepted {
-    background: #d1e7dd;
-    color: #0f5132;
+    color: #147445;
+    background: #e1f7eb;
+    border: 1px solid #c2ebd4;
 }
 
 .completed {
-    background: #cfe2ff;
-    color: #084298;
+    color: #1556a0;
+    background: #e6f0ff;
+    border: 1px solid #cbdfff;
 }
 
+/* =====================================
+   ACTION BUTTONS
+===================================== */
+
 .buttons {
-    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 23px;
+    padding-top: 20px;
+
+    border-top: 1px solid #edf1f6;
 }
 
 .btn {
-    display: inline-block;
+    position: relative;
+    overflow: hidden;
 
-    padding: 11px 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
-    border-radius: 6px;
+    min-height: 43px;
+    padding: 12px 19px;
+    margin: 0;
+
+    border: 1px solid transparent;
+    border-radius: 9px;
 
     color: white;
-
     text-decoration: none;
+    text-align: center;
 
-    font-weight: bold;
-
-    margin-right: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
 
     cursor: pointer;
+
+    transition:
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease;
 }
 
+.btn:hover {
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Accept */
+
 .accept {
-    background: #198754;
+    background: var(--green);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.12);
 }
 
 .accept:hover {
-    background: #157347;
+    background: #146c43;
+    box-shadow: 0 7px 17px rgba(25, 135, 84, 0.23);
 }
 
+/* Reject */
+
 .reject {
-    background: #dc3545;
+    background: #fff;
+    color: var(--red);
+    border-color: #f0c8cd;
 }
 
 .reject:hover {
-    background: #bb2d3b;
+    background: #fff0f1;
+    color: #b42332;
+    box-shadow: 0 5px 14px rgba(220, 53, 69, 0.1);
 }
 
-.empty {
-    background: white;
+/* =====================================
+   EMPTY STATE
+===================================== */
 
-    padding: 35px;
+.empty {
+    position: relative;
+    overflow: hidden;
+
+    padding: 40px 25px;
+    margin: 20px 0 32px;
+
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
 
     text-align: center;
 
-    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(23, 63, 115, 0.055);
 
-    box-shadow:
-        0 5px 20px rgba(0,0,0,0.08);
+    animation: fadeUp 0.55s ease both;
+}
 
-    color: #666;
+.empty::before {
+    content: "📭";
+
+    display: grid;
+    place-items: center;
+
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 17px;
+
+    background: var(--primary-light);
+    border-radius: 22px;
+
+    font-size: 35px;
+}
+
+.empty h3 {
+    margin-bottom: 8px;
+
+    color: var(--primary);
+    font-size: 21px;
+}
+
+.empty p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* =====================================
+   ACCESSIBILITY
+===================================== */
+
+a:focus-visible {
+    outline: 3px solid #ffbf80;
+    outline-offset: 3px;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes navAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes floatHome {
+    0%, 100% {
+        transform: translateY(-50%);
+    }
+
+    50% {
+        transform: translateY(calc(-50% - 7px));
+    }
+}
+
+/* =====================================
+   TABLET
+===================================== */
+
+@media (max-width: 850px) {
+    nav {
+        padding: 15px 4%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    nav strong {
+        width: 100%;
+        text-align: center;
+    }
+
+    nav a {
+        margin: 5px 8px;
+    }
+
+    nav a[href*="logout"] {
+        margin: 5px 8px;
+    }
+
+    .container {
+        width: 94%;
+    }
+}
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media (max-width: 600px) {
+    nav {
+        gap: 8px;
+        padding: 16px 10px;
+    }
+
+    nav strong {
+        font-size: 21px;
+    }
+
+    nav a {
+        font-size: 12px;
+        margin: 5px 6px;
+    }
+
+    nav a[href*="logout"] {
+        padding: 8px 11px;
+    }
+
+    .container {
+        width: 94%;
+        margin: 23px auto 40px;
+    }
+
+    .welcome {
+        padding: 25px 20px;
+        border-radius: 17px;
+    }
+
+    .welcome::after {
+        right: 17px;
+        top: 18px;
+        font-size: 32px;
+        transform: none;
+        animation: none;
+    }
+
+    .welcome h1 {
+        padding-right: 28px;
+        font-size: 25px;
+    }
+
+    .welcome p {
+        padding-right: 0;
+        font-size: 13px;
+    }
+
+    h2 {
+        margin-top: 28px;
+        font-size: 21px;
+    }
+
+    .booking-card {
+        padding: 22px 17px;
+        border-radius: 15px;
+    }
+
+    .service-name {
+        font-size: 21px;
+    }
+
+    .info {
+        display: block;
+        font-size: 13px;
+    }
+
+    .info strong {
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .empty {
+        padding: 30px 17px;
+    }
+}
+
+/* Respect reduced-motion preferences */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 </style>

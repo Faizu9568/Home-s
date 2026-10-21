@@ -1,39 +1,57 @@
 <?php
 
 session_start();
-include "../config/database.php";
+require_once "../config/database.php";
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: ../html/login.html");
     exit();
 }
 
+// Get form data
 $phone = trim($_POST["phone"] ?? "");
 $phone = preg_replace("/\D/", "", $phone);
 
+$name = trim($_POST["name"] ?? "");
+
+// Validate phone
 if (strlen($phone) !== 10) {
     die("Please enter a valid 10 digit mobile number.");
 }
 
+// Validate name if provided
+if ($name !== "" && mb_strlen($name) > 100) {
+    die("Name must not exceed 100 characters.");
+}
+
+// Redirect destination
 $redirect = $_POST["redirect"] ?? "dashboard";
 
 if ($redirect !== "booking") {
     $redirect = "dashboard";
 }
 
-/* Old OTP session clear */
-unset($_SESSION["test_otp"]);
-unset($_SESSION["otp_user_id"]);
-unset($_SESSION["new_customer"]);
-unset($_SESSION["new_customer_phone"]);
+// Clear old OTP session data
+unset(
+    $_SESSION["test_otp"],
+    $_SESSION["otp_user_id"],
+    $_SESSION["new_customer"],
+    $_SESSION["new_customer_phone"],
+    $_SESSION["new_customer_name"],
+    $_SESSION["otp_phone"]
+);
 
-/* Check customer */
+// Check whether customer already exists
 $stmt = $conn->prepare(
     "SELECT id, name, email, phone, role
      FROM users
      WHERE phone = ?
      LIMIT 1"
 );
+
+if (!$stmt) {
+    die("Unable to process login. Please try again.");
+}
 
 $stmt->bind_param("s", $phone);
 $stmt->execute();
@@ -45,31 +63,42 @@ $userId = 0;
 
 if ($result->num_rows > 0) {
 
+    // Existing user
     $user = $result->fetch_assoc();
 
     if (strtolower(trim($user["role"])) !== "customer") {
+        $stmt->close();
         die("This mobile number belongs to another account type.");
     }
 
-    $userId = (int)$user["id"];
+    $userId = (int) $user["id"];
 
 } else {
+
+    // New customer
+    if ($name === "") {
+        $stmt->close();
+        die("Please enter your name before continuing.");
+    }
 
     $isNewUser = true;
 
     $_SESSION["new_customer"] = true;
     $_SESSION["new_customer_phone"] = $phone;
+    $_SESSION["new_customer_name"] = $name;
 }
 
-/* Generate OTP */
+$stmt->close();
+
+// Generate test OTP
 $otp = (string) random_int(100000, 999999);
 
-/* Save OTP in session */
+// Save OTP in session
 $_SESSION["test_otp"] = $otp;
 $_SESSION["otp_phone"] = $phone;
 $_SESSION["login_redirect"] = $redirect;
 
-/* Existing user */
+// Existing customer: save OTP in database
 if (!$isNewUser) {
 
     $expiry = date("Y-m-d H:i:s", time() + 300);
@@ -80,6 +109,10 @@ if (!$isNewUser) {
          WHERE id = ?"
     );
 
+    if (!$update) {
+        die("Unable to generate OTP. Please try again.");
+    }
+
     $update->bind_param("ssi", $otp, $expiry, $userId);
     $update->execute();
     $update->close();
@@ -87,15 +120,7 @@ if (!$isNewUser) {
     $_SESSION["otp_user_id"] = $userId;
 }
 
-$stmt->close();
-
-/*
-    CLEAN FLOW:
-    OTP Generated page par rukne ke bajay
-    direct Verify OTP page par jao.
-    
-    Test mode ke liye OTP URL me temporarily bhej rahe hain.
-*/
+// Redirect to OTP verification page
 header(
     "Location: ../html/verify_otp.html?redirect=" .
     urlencode($redirect) .

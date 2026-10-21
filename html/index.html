@@ -1,1172 +1,665 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="description"
-        content="HomeServe - Reliable home services at your doorstep. Book trusted professionals for plumbing, electrical, cleaning, AC repair, carpentry and painting."
-    >
+    <meta name="description"
+          content="HomeServe provides reliable home services at your doorstep. Find trusted plumbers, electricians, cleaners, AC repair experts, carpenters and painters.">
 
-    <title>Home Service Provider | Reliable Home Services</title>
+    <meta name="theme-color" content="#2864f0">
 
-    <!-- HOME CSS -->
+    <title>HomeServe | Reliable Home Services</title>
+
     <link rel="stylesheet" href="../css/home.css">
 </head>
 
-
 <body>
 
+<!-- ================= NAVBAR ================= -->
 
-    <!-- =====================================================
-         NAVBAR
-    ====================================================== -->
+<header class="navbar">
+    <div class="nav-container">
 
-    <header class="navbar">
+        <a href="index.html" class="logo">
+            <span class="logo-icon">⌂</span>
+            <span>Home<span class="logo-highlight">Serve</span></span>
+        </a>
 
-        <div class="nav-container">
+        <nav class="nav-menu" id="navMenu">
+            <a href="index.html" class="active">Home</a>
+            <a href="service.html">Services</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
 
-            <!-- LOGO -->
-
-            <a href="index.html" class="logo">
-
-                <span class="logo-icon">⌂</span>
-
-                <span>Home Service Provider</span>
-
-            </a>
-
-
-            <!-- NAVIGATION -->
-
-            <nav class="nav-menu">
-
-                <a href="index.html" class="active">
-                    Home
-                </a>
-
-                <a href="service.html">
-                    Services
-                </a>
-
-                <a href="#about">
-                    About
-                </a>
-
-                <a href="#contact">
-                    Contact
-                </a>
-
-            </nav>
-
-
-            <!-- NAV BUTTONS -->
-
-            <div class="nav-buttons">
-
-                <a href="login.html" class="login-btn">
-                    Login
-                </a>
-
-                <a href="login.html" class="register-btn">
-                    Register
-                </a>
-
-            </div>
-
+        <div class="nav-buttons">
+            <a href="login.html" class="login-btn">Login</a>
+            <a href="login.html" class="register-btn">Get Started</a>
         </div>
 
-    </header>
+        <button class="mobile-menu-btn"
+                id="mobileMenuBtn"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false">
+            ☰
+        </button>
+
+    </div>
+</header>
 
 
+<main>
 
-    <!-- =====================================================
-         HERO SECTION
-    ====================================================== -->
+<!-- ================= HERO SECTION ================= -->
 
-    <main>
+<section class="hero">
+    <div class="hero-container">
 
-        <section class="hero">
+        <div class="hero-content">
 
-            <div class="hero-container">
-
-
-                <!-- HERO CONTENT -->
-
-                <div class="hero-content">
-
-                    <span class="hero-badge">
-                        🏠 Trusted Home Services
-                    </span>
-
-
-                    <h1>
-                        Reliable Home Services
-                        <span>
-                            At Your Doorstep
-                        </span>
-                    </h1>
-
-
-                    <p>
-                        Find trusted professionals for all your
-                        home service needs. Fast, reliable and
-                        hassle-free.
-                    </p>
-
-
-                    <!-- SEARCH -->
-
-                    <div class="search-box">
-
-                        <input
-                            type="text"
-                            id="serviceSearch"
-                            placeholder="Search for a service..."
-                            autocomplete="off"
-                        >
-
-                        <button
-                            type="button"
-                            onclick="searchService()"
-                        >
-                            Search
-                        </button>
-
-                    </div>
-
-
-                    <!-- QUICK SERVICES -->
-
-                    <div class="quick-services">
-
-                        <span>Popular:</span>
-
-                        <button onclick="quickSearch('Plumber')">
-                            Plumber
-                        </button>
-
-                        <button onclick="quickSearch('Electrician')">
-                            Electrician
-                        </button>
-
-                        <button onclick="quickSearch('AC Repair')">
-                            AC Repair
-                        </button>
-
-                        <button onclick="quickSearch('Cleaning')">
-                            Cleaning
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- HERO IMAGE -->
-
-                <div class="hero-image">
-
-                    <div class="hero-image-card">
-
-                        <img
-                            src="../images/plumber.jpg"
-                            alt="Professional HomeServe service provider"
-                        >
-
-                        <div class="hero-image-overlay">
-
-                            <div class="hero-rating">
-                                ⭐ 4.9
-                            </div>
-
-                            <div>
-                                <strong>
-                                    Trusted Professionals
-                                </strong>
-
-                                <span>
-                                    Quality service at your doorstep
-                                </span>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- FLOATING CARD -->
-
-                    <div class="floating-card">
-
-                        <div class="floating-icon">
-                            ✓
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                Verified Professionals
-                            </strong>
-
-                            <span>
-                                Safe & Reliable
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                YOUR HOME, OUR PRIORITY
             </div>
 
-        </section>
-
-
-
-        <!-- =====================================================
-             TRUST SECTION
-        ====================================================== -->
-
-        <section class="trust-section">
-
-            <div class="trust-container">
-
-                <div class="trust-item">
-
-                    <div class="trust-icon">
-                        ✓
-                    </div>
-
-                    <div>
-                        <strong>Verified Professionals</strong>
-                        <span>Trusted service providers</span>
-                    </div>
-
-                </div>
-
-
-                <div class="trust-item">
-
-                    <div class="trust-icon">
-                        ⚡
-                    </div>
-
-                    <div>
-                        <strong>Quick Service</strong>
-                        <span>Book services easily</span>
-                    </div>
-
-                </div>
-
-
-                <div class="trust-item">
-
-                    <div class="trust-icon">
-                        ₹
-                    </div>
-
-                    <div>
-                        <strong>Transparent Pricing</strong>
-                        <span>No hidden charges</span>
-                    </div>
-
-                </div>
-
-
-                <div class="trust-item">
-
-                    <div class="trust-icon">
-                        ★
-                    </div>
-
-                    <div>
-                        <strong>Quality Work</strong>
-                        <span>Customer satisfaction</span>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =====================================================
-             SERVICES SECTION
-        ====================================================== -->
-
-        <section class="services-section" id="services">
-
-            <div class="section-heading">
-
-                <span class="section-tag">
-                    OUR SERVICES
-                </span>
-
-                <h2>
-                    Popular Services
-                </h2>
-
-                <p>
-                    Choose from our wide range of professional
-                    home services.
-                </p>
-
-            </div>
-
-
-
-            <div class="services-grid">
-
-
-                <!-- PLUMBER -->
-
-                <div class="service-card">
-
-                    <div class="service-image">
-
-                        <img
-                            src="../images/plumber.jpg"
-                            alt="Plumber service"
-                        >
-
-                        <span class="service-label">
-                            Popular
-                        </span>
-
-                    </div>
-
-
-                    <div class="service-content">
-
-                        <h3>
-                            Plumber
-                        </h3>
-
-                        <p>
-                            Tap repair, pipe repair and
-                            leakage repair.
-                        </p>
-
-
-                        <div class="service-bottom">
-
-                            <span class="service-price">
-                                ₹100/hour
-                            </span>
-
-                            <a
-                                href="login.html?redirect=booking"
-                                class="book-btn"
-                            >
-                                Book Now →
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- ELECTRICIAN -->
-
-                <div class="service-card">
-
-                    <div class="service-image">
-
-                        <img
-                            src="../images/electrician.jpg"
-                            alt="Electrician service"
-                        >
-
-                    </div>
-
-
-                    <div class="service-content">
-
-                        <h3>
-                            Electrician
-                        </h3>
-
-                        <p>
-                            Wiring, fan, switch and electrical
-                            repair.
-                        </p>
-
-
-                        <div class="service-bottom">
-
-                            <span class="service-price">
-                                ₹150/hour
-                            </span>
-
-                            <a
-                                href="login.html?redirect=booking"
-                                class="book-btn"
-                            >
-                                Book Now →
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- HOME CLEANING -->
-
-                <div class="service-card">
-
-                    <div class="service-image">
-
-                        <img
-                            src="../images/cleaning.jpg"
-                            alt="Home cleaning service"
-                        >
-
-                    </div>
-
-
-                    <div class="service-content">
-
-                        <h3>
-                            Home Cleaning
-                        </h3>
-
-                        <p>
-                            Full home and deep cleaning service.
-                        </p>
-
-
-                        <div class="service-bottom">
-
-                            <span class="service-price">
-                                ₹120/hour
-                            </span>
-
-                            <a
-                                href="login.html?redirect=booking"
-                                class="book-btn"
-                            >
-                                Book Now →
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- CARPENTER -->
-
-                <div class="service-card">
-
-                    <div class="service-image">
-
-                        <img
-                            src="../images/carpenter.jpg"
-                            alt="Carpenter service"
-                        >
-
-                    </div>
-
-
-                    <div class="service-content">
-
-                        <h3>
-                            Carpenter
-                        </h3>
-
-                        <p>
-                            Furniture repair and woodwork.
-                        </p>
-
-
-                        <div class="service-bottom">
-
-                            <span class="service-price">
-                                ₹180/hour
-                            </span>
-
-                            <a
-                                href="login.html?redirect=booking"
-                                class="book-btn"
-                            >
-                                Book Now →
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- AC REPAIR -->
-
-                <div class="service-card">
-
-                    <div class="service-image">
-
-                        <img
-                            src="../images/ac-service.jpg"
-                            alt="AC repair service"
-                        >
-
-                    </div>
-
-
-                    <div class="service-content">
-
-                        <h3>
-                            AC Repair
-                        </h3>
-
-                        <p>
-                            AC servicing, maintenance and repair.
-                        </p>
-
-
-                        <div class="service-bottom">
-
-                            <span class="service-price">
-                                ₹200/hour
-                            </span>
-
-                            <a
-                                href="login.html?redirect=booking"
-                                class="book-btn"
-                            >
-                                Book Now →
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- PAINTING -->
-
-                <div class="service-card">
-
-                    <div class="service-image">
-
-                        <img
-                            src="../images/painter.jpg"
-                            alt="Painting service"
-                        >
-
-                    </div>
-
-
-                    <div class="service-content">
-
-                        <h3>
-                            Painting
-                        </h3>
-
-                        <p>
-                            Home painting and renovation service.
-                        </p>
-
-
-                        <div class="service-bottom">
-
-                            <span class="service-price">
-                                ₹200/hour
-                            </span>
-
-                            <a
-                                href="login.html?redirect=booking"
-                                class="book-btn"
-                            >
-                                Book Now →
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-            <!-- VIEW ALL -->
-
-            <div class="view-all">
-
-                <a href="service.html">
-                    View All Services →
-                </a>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =====================================================
-             ABOUT SECTION
-        ====================================================== -->
-
-        <section class="about-section" id="about">
-
-            <div class="about-container">
-
-
-                <div class="about-image">
-
-                    <img
-                        src="../images/carpenter.jpg"
-                        alt="HomeServe professional"
-                    >
-
-                    <div class="experience-card">
-
-                        <strong>
-                            100%
-                        </strong>
-
-                        <span>
-                            Customer Focused
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-
-                <div class="about-content">
-
-                    <span class="section-tag">
-                        ABOUT HOMESERVE
-                    </span>
-
-                    <h2>
-                        Making Home Services
-                        Simple & Reliable
-                    </h2>
-
-                    <p>
-                        HomeServe connects customers with trusted
-                        service professionals for all their home
-                        maintenance needs.
-                    </p>
-
-                    <p>
-                        Whether you need a plumber, electrician,
-                        cleaner, carpenter, AC technician or painter,
-                        HomeServe makes it easy to find and book
-                        the right professional.
-                    </p>
-
-
-                    <div class="about-points">
-
-                        <div>
-                            <span>✓</span>
-                            Verified service providers
-                        </div>
-
-                        <div>
-                            <span>✓</span>
-                            Easy online booking
-                        </div>
-
-                        <div>
-                            <span>✓</span>
-                            Transparent pricing
-                        </div>
-
-                        <div>
-                            <span>✓</span>
-                            Reliable home services
-                        </div>
-
-                    </div>
-
-
-                    <a
-                        href="service.html"
-                        class="primary-btn"
-                    >
-                        Explore Services →
-                    </a>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =====================================================
-             HOW IT WORKS
-        ====================================================== -->
-
-        <section class="how-section">
-
-            <div class="section-heading">
-
-                <span class="section-tag">
-                    SIMPLE PROCESS
-                </span>
-
-                <h2>
-                    How HomeServe Works
-                </h2>
-
-                <p>
-                    Get your home service booked in just a few
-                    simple steps.
-                </p>
-
-            </div>
-
-
-            <div class="steps-container">
-
-
-                <div class="step">
-
-                    <div class="step-number">
-                        01
-                    </div>
-
-                    <h3>
-                        Choose a Service
-                    </h3>
-
-                    <p>
-                        Select the home service you need.
-                    </p>
-
-                </div>
-
-
-                <div class="step-line"></div>
-
-
-                <div class="step">
-
-                    <div class="step-number">
-                        02
-                    </div>
-
-                    <h3>
-                        Book a Professional
-                    </h3>
-
-                    <p>
-                        Enter your address, date and time.
-                    </p>
-
-                </div>
-
-
-                <div class="step-line"></div>
-
-
-                <div class="step">
-
-                    <div class="step-number">
-                        03
-                    </div>
-
-                    <h3>
-                        Get the Service
-                    </h3>
-
-                    <p>
-                        A trusted professional completes the job.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =====================================================
-             CTA SECTION
-        ====================================================== -->
-
-        <section class="cta-section">
-
-            <div class="cta-container">
-
-                <div>
-
-                    <span>
-                        NEED A HOME SERVICE?
-                    </span>
-
-                    <h2>
-                        Let Us Take Care of Your Home
-                    </h2>
-
-                    <p>
-                        Book a trusted professional today.
-                    </p>
-
-                </div>
-
-
-                <a
-                    href="service.html"
-                    class="cta-button"
+            <h1>
+                Home services made
+                <span>simple &amp; reliable.</span>
+            </h1>
+
+            <p class="hero-description">
+                From everyday repairs to complete home care,
+                find trusted professionals for every corner
+                of your home. Quality service, right at your doorstep.
+            </p>
+
+            <!-- SERVICE SEARCH -->
+
+            <form class="hero-search" id="heroSearchForm">
+
+                <span class="search-icon" aria-hidden="true">⌕</span>
+
+                <input
+                    type="search"
+                    id="heroServiceSearch"
+                    placeholder="What service do you need?"
+                    list="homeServiceOptions"
+                    autocomplete="off"
+                    aria-label="Search for a home service"
+                    required
                 >
-                    Book a Service →
+
+                <datalist id="homeServiceOptions">
+                    <option value="Plumber"></option>
+                    <option value="Electrician"></option>
+                    <option value="Home Cleaning"></option>
+                    <option value="AC Repair"></option>
+                    <option value="Carpenter"></option>
+                    <option value="Painting"></option>
+                </datalist>
+
+                <button type="submit">
+                    Search <span>→</span>
+                </button>
+
+            </form>
+
+            <p class="search-hint" id="heroSearchMessage">
+                <span>Popular:</span>
+
+                <button type="button" class="quick-service"
+                        data-service="Plumber">Plumber</button>
+
+                <button type="button" class="quick-service"
+                        data-service="Electrician">Electrician</button>
+
+                <button type="button" class="quick-service"
+                        data-service="AC Repair">AC Repair</button>
+
+                <button type="button" class="quick-service"
+                        data-service="Home Cleaning">Cleaning</button>
+            </p>
+
+            <div class="hero-actions">
+                <a href="service.html" class="hero-primary-btn">
+                    Explore Services <span>→</span>
                 </a>
 
+                <a href="#how-it-works" class="hero-secondary-btn">
+                    How It Works
+                </a>
             </div>
 
-        </section>
-
-
-
-        <!-- =====================================================
-             CONTACT SECTION
-        ====================================================== -->
-
-        <section class="contact-section" id="contact">
-
-            <div class="section-heading">
-
-                <span class="section-tag">
-                    CONTACT US
-                </span>
-
-                <h2>
-                    We're Here to Help
-                </h2>
-
+            <div class="hero-promise">
+                <span class="promise-check">✓</span>
                 <p>
-                    Have a question? Get in touch with HomeServe.
+                    <strong>Simple booking.</strong>
+                    Reliable service at your doorstep.
                 </p>
-
-            </div>
-
-
-            <div class="contact-grid">
-
-
-                <div class="contact-card">
-
-                    <div class="contact-icon">
-                        📞
-                    </div>
-
-                    <h3>
-                        Phone
-                    </h3>
-
-                    <p>
-                        +91 90000 00000
-                    </p>
-
-                </div>
-
-
-                <div class="contact-card">
-
-                    <div class="contact-icon">
-                        ✉
-                    </div>
-
-                    <h3>
-                        Email
-                    </h3>
-
-                    <p>
-                        support@homeserve.com
-                    </p>
-
-                </div>
-
-
-                <div class="contact-card">
-
-                    <div class="contact-icon">
-                        📍
-                    </div>
-
-                    <h3>
-                        Location
-                    </h3>
-
-                    <p>
-                        New Delhi, India
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-
-    <!-- =====================================================
-         FOOTER
-    ====================================================== -->
-
-    <footer class="footer">
-
-        <div class="footer-container">
-
-
-            <div class="footer-brand">
-
-                <a href="index.html" class="footer-logo">
-                    HomeServe
-                </a>
-
-                <p>
-                    Your trusted home service provider.
-                    Reliable professionals at your doorstep.
-                </p>
-
-            </div>
-
-
-
-            <div class="footer-links">
-
-                <h3>
-                    Quick Links
-                </h3>
-
-                <a href="index.html">
-                    Home
-                </a>
-
-                <a href="service.html">
-                    Services
-                </a>
-
-                <a href="#about">
-                    About
-                </a>
-
-                <a href="#contact">
-                    Contact
-                </a>
-
-            </div>
-
-
-
-            <div class="footer-links">
-
-                <h3>
-                    Services
-                </h3>
-
-                <a href="service.html">
-                    Plumber
-                </a>
-
-                <a href="service.html">
-                    Electrician
-                </a>
-
-                <a href="service.html">
-                    Home Cleaning
-                </a>
-
-                <a href="service.html">
-                    AC Repair
-                </a>
-
-                <a href="service.html">
-                    Painting
-                </a>
-
-            </div>
-
-
-
-            <div class="footer-links">
-
-                <h3>
-                    Account
-                </h3>
-
-                <a href="login.html">
-                    Customer Login
-                </a>
-
-                <a href="provider-login.html">
-                    Provider Login
-                </a>
-
-                <a href="../admin/login.php">
-                    Admin Login
-                </a>
-
             </div>
 
         </div>
 
 
-        <div class="footer-bottom">
+        <!-- HERO IMAGE -->
 
-            <p>
-                © 2026 HomeServe. All Rights Reserved.
-            </p>
+        <div class="hero-visual">
 
-            <p>
-                Reliable Home Services at Your Doorstep.
-            </p>
+            <div class="hero-decoration hero-decoration-one"></div>
+            <div class="hero-decoration hero-decoration-two"></div>
+
+            <div class="hero-visual-card">
+
+                <div class="visual-top">
+                    <span class="visual-eyebrow">HOMESERVE SERVICES</span>
+                    <span class="visual-sparkle">✦</span>
+                </div>
+
+                <div class="hero-main-image">
+                    <img
+                        src="../images/plumber.jpg"
+                        alt="Professional home service expert"
+                    >
+
+                    <div class="image-label">
+                        <span class="image-label-icon">✓</span>
+
+                        <div>
+                            <strong>Trusted Professionals</strong>
+                            <span>Quality service at your doorstep</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="visual-caption">
+                    <h2>Your home, taken care of.</h2>
+                    <p>Everyday solutions. Professional care.</p>
+                </div>
+
+                <div class="visual-service-tags">
+                    <span>🔧 Repairs</span>
+                    <span>🧹 Cleaning</span>
+                    <span>⚡ Electrical</span>
+                </div>
+
+            </div>
+
+            <div class="hero-floating-card floating-booking">
+                <div class="floating-icon booking-icon">✓</div>
+                <div>
+                    <strong>Easy Booking</strong>
+                    <span>Book in a few steps</span>
+                </div>
+            </div>
+
+            <div class="hero-floating-card floating-price">
+                <div class="floating-icon price-icon">₹</div>
+                <div>
+                    <strong>Clear Pricing</strong>
+                    <span>Know the hourly rate</span>
+                </div>
+            </div>
 
         </div>
 
-    </footer>
+    </div>
+</section>
 
 
+<!-- ================= TRUST SECTION ================= -->
 
-    <!-- =====================================================
-         JAVASCRIPT
-    ====================================================== -->
+<section class="trust-section">
+    <div class="trust-container">
 
-    <script>
+        <div class="trust-item">
+            <div class="trust-icon">✓</div>
+            <div>
+                <strong>Verified Professionals</strong>
+                <span>Trusted service providers</span>
+            </div>
+        </div>
 
-        /*
-         * SEARCH SERVICE
-         */
+        <div class="trust-item">
+            <div class="trust-icon">⚡</div>
+            <div>
+                <strong>Quick Service</strong>
+                <span>Book services easily</span>
+            </div>
+        </div>
 
-        function searchService() {
+        <div class="trust-item">
+            <div class="trust-icon">₹</div>
+            <div>
+                <strong>Transparent Pricing</strong>
+                <span>No hidden charges</span>
+            </div>
+        </div>
 
-            const input =
-                document.getElementById("serviceSearch");
+        <div class="trust-item">
+            <div class="trust-icon">★</div>
+            <div>
+                <strong>Quality Work</strong>
+                <span>Customer satisfaction</span>
+            </div>
+        </div>
 
-            const service =
-                input.value.trim().toLowerCase();
-
-
-            if (service === "") {
-
-                alert("Please enter a service name.");
-
-                return;
-            }
-
-
-            const services = {
-
-                "plumber": "Plumber",
-
-                "plumbing": "Plumber",
-
-                "electrician": "Electrician",
-
-                "electric": "Electrician",
-
-                "cleaning": "Home Cleaning",
-
-                "clean": "Home Cleaning",
-
-                "home cleaning": "Home Cleaning",
-
-                "carpenter": "Carpenter",
-
-                "carpentry": "Carpenter",
-
-                "ac": "AC Repair",
-
-                "ac repair": "AC Repair",
-
-                "air conditioner": "AC Repair",
-
-                "painting": "Painting",
-
-                "painter": "Painting",
-
-                "paint": "Painting"
-
-            };
+    </div>
+</section>
 
 
-            if (services[service]) {
+<!-- ================= POPULAR SERVICES ================= -->
 
-                window.location.href =
-                    "service.html";
+<section class="services-section" id="services">
 
-            } else {
+    <div class="section-heading">
+        <span class="section-tag">OUR SERVICES</span>
+        <h2>Popular Services</h2>
+        <p>Choose from our range of professional home services.</p>
+    </div>
 
-                alert(
-                    "Sorry, this service is not available right now."
-                );
+    <div class="services-grid">
 
-            }
+        <!-- PLUMBER -->
+        <article class="service-card">
+            <div class="service-image">
+                <img src="../images/plumber.jpg" alt="Plumber service" loading="lazy">
+                <span class="service-label">Popular</span>
+            </div>
 
+            <div class="service-content">
+                <h3>Plumber</h3>
+                <p>Tap repair, pipe repair and leakage repair.</p>
+
+                <div class="service-bottom">
+                    <span class="service-price">₹100/hour</span>
+                    <a href="login.html?redirect=booking&service=Plumber"
+                       class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- ELECTRICIAN -->
+        <article class="service-card">
+            <div class="service-image">
+                <img src="../images/electrician.jpg" alt="Electrician service" loading="lazy">
+            </div>
+
+            <div class="service-content">
+                <h3>Electrician</h3>
+                <p>Wiring, fan, switch and electrical repair.</p>
+
+                <div class="service-bottom">
+                    <span class="service-price">₹150/hour</span>
+                    <a href="login.html?redirect=booking&service=Electrician"
+                       class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- CLEANING -->
+        <article class="service-card">
+            <div class="service-image">
+<img src="../images/cleaning.jpeg"
+     alt="Professional home cleaning service"
+     loading="lazy">
+            </div>
+
+            <div class="service-content">
+                <h3>Home Cleaning</h3>
+                <p>Full home and deep cleaning service.</p>
+
+                <div class="service-bottom">
+                    <span class="service-price">₹120/hour</span>
+                    <a href="login.html?redirect=booking&service=Home%20Cleaning"
+                       class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- CARPENTER -->
+        <article class="service-card">
+            <div class="service-image">
+                <img src="../images/carpenter.jpg" alt="Carpenter service" loading="lazy">
+            </div>
+
+            <div class="service-content">
+                <h3>Carpenter</h3>
+                <p>Furniture repair and woodwork.</p>
+
+                <div class="service-bottom">
+                    <span class="service-price">₹120/hour</span>
+                    <a href="login.html?redirect=booking&service=Carpenter"
+                       class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- AC REPAIR -->
+        <article class="service-card">
+            <div class="service-image">
+                <img src="../images/ac-service.jpg" alt="AC repair service" loading="lazy">
+            </div>
+
+            <div class="service-content">
+                <h3>AC Repair</h3>
+                <p>AC servicing, maintenance and repair.</p>
+
+                <div class="service-bottom">
+                    <span class="service-price">₹200/hour</span>
+                    <a href="login.html?redirect=booking&service=AC%20Repair"
+                       class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- PAINTING -->
+        <article class="service-card">
+            <div class="service-image">
+<img src="../images/painter.jpeg"
+     alt="Home painting and wall finishing service"
+     loading="lazy">
+            </div>
+
+            <div class="service-content">
+                <h3>Painting</h3>
+                <p>Home painting and renovation service.</p>
+
+                <div class="service-bottom">
+                    <span class="service-price">₹200/hour</span>
+                    <a href="login.html?redirect=booking&service=Painting"
+                       class="book-btn">Book Now →</a>
+                </div>
+            </div>
+        </article>
+
+    </div>
+
+    <div class="view-all">
+        <a href="service.html">View All Services →</a>
+    </div>
+
+</section>
+
+
+<!-- ================= ABOUT SECTION ================= -->
+
+<section class="about-section" id="about">
+    <div class="about-container">
+
+        <div class="about-image">
+            <img src="../images/carpenter.jpg"
+                 alt="Home service professional"
+                 loading="lazy">
+
+            <div class="experience-card">
+                <strong>100%</strong>
+                <span>Customer Focused</span>
+            </div>
+        </div>
+
+        <div class="about-content">
+            <span class="section-tag">ABOUT HOMESERVE</span>
+
+            <h2>Making Home Services Simple &amp; Reliable</h2>
+
+            <p>
+                HomeServe connects customers with service professionals
+                for their everyday home maintenance needs.
+            </p>
+
+            <p>
+                Whether you need a plumber, electrician, cleaner,
+                carpenter, AC technician or painter, HomeServe makes
+                it easy to explore and book the right service.
+            </p>
+
+            <div class="about-points">
+                <div><span>✓</span> Verified service providers</div>
+                <div><span>✓</span> Easy online booking</div>
+                <div><span>✓</span> Transparent pricing</div>
+                <div><span>✓</span> Reliable home services</div>
+            </div>
+
+            <a href="service.html" class="primary-btn">
+                Explore Services →
+            </a>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ================= HOW IT WORKS ================= -->
+
+<section class="how-section" id="how-it-works">
+
+    <div class="section-heading">
+        <span class="section-tag">SIMPLE PROCESS</span>
+        <h2>How HomeServe Works</h2>
+        <p>Get your home service booked in just a few simple steps.</p>
+    </div>
+
+    <div class="steps-container">
+
+        <div class="step">
+            <div class="step-number">01</div>
+            <h3>Choose a Service</h3>
+            <p>Select the home service you need.</p>
+        </div>
+
+        <div class="step-line"></div>
+
+        <div class="step">
+            <div class="step-number">02</div>
+            <h3>Book a Professional</h3>
+            <p>Enter your address, date and time.</p>
+        </div>
+
+        <div class="step-line"></div>
+
+        <div class="step">
+            <div class="step-number">03</div>
+            <h3>Get the Service</h3>
+            <p>A service professional completes the job.</p>
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ================= CTA SECTION ================= -->
+
+<section class="cta-section">
+    <div class="cta-container">
+
+        <div>
+            <span>NEED A HOME SERVICE?</span>
+            <h2>Let Us Take Care of Your Home</h2>
+            <p>Find the right service for your home today.</p>
+        </div>
+
+        <a href="service.html" class="cta-button">
+            Explore Services →
+        </a>
+
+    </div>
+</section>
+
+
+<!-- ================= CONTACT SECTION ================= -->
+
+<section class="contact-section" id="contact">
+
+    <div class="section-heading">
+        <span class="section-tag">CONTACT US</span>
+        <h2>We're Here to Help</h2>
+        <p>Have a question? Get in touch with HomeServe.</p>
+    </div>
+
+    <div class="contact-grid">
+
+        <div class="contact-card">
+            <div class="contact-icon">📞</div>
+            <h3>Phone</h3>
+            <p>+91 90000 00000</p>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-icon">✉</div>
+            <h3>Email</h3>
+            <p>support@homeserve.com</p>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-icon">📍</div>
+            <h3>Location</h3>
+            <p>New Delhi, India</p>
+        </div>
+
+    </div>
+</section>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div class="footer-brand">
+            <a href="index.html" class="footer-logo">HomeServe</a>
+
+            <p>
+                Your trusted home service provider.
+                Reliable professionals at your doorstep.
+            </p>
+        </div>
+
+        <div class="footer-links">
+            <h3>Quick Links</h3>
+            <a href="index.html">Home</a>
+            <a href="service.html">Services</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+
+        <div class="footer-links">
+            <h3>Services</h3>
+            <a href="service.html?service=Plumber">Plumber</a>
+            <a href="service.html?service=Electrician">Electrician</a>
+            <a href="service.html?service=Home%20Cleaning">Home Cleaning</a>
+            <a href="service.html?service=AC%20Repair">AC Repair</a>
+            <a href="service.html?service=Painting">Painting</a>
+        </div>
+
+        <div class="footer-links">
+            <h3>Account</h3>
+            <a href="login.html">Customer Login</a>
+            <a href="provider-login.html">Provider Login</a>
+            <a href="../admin/login.php">Admin Login</a>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>© 2026 HomeServe. All Rights Reserved.</p>
+        <p>Reliable Home Services at Your Doorstep.</p>
+    </div>
+
+</footer>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+(function () {
+    const aliases = {
+        "plumber": "Plumber",
+        "plumbing": "Plumber",
+        "electrician": "Electrician",
+        "electric": "Electrician",
+        "electrical": "Electrician",
+        "cleaning": "Home Cleaning",
+        "cleaner": "Home Cleaning",
+        "home cleaning": "Home Cleaning",
+        "deep cleaning": "Home Cleaning",
+        "carpenter": "Carpenter",
+        "carpentry": "Carpenter",
+        "woodwork": "Carpenter",
+        "ac": "AC Repair",
+        "ac repair": "AC Repair",
+        "ac servicing": "AC Repair",
+        "air conditioner": "AC Repair",
+        "painting": "Painting",
+        "painter": "Painting",
+        "paint": "Painting"
+    };
+
+    const searchForm = document.getElementById("heroSearchForm");
+    const searchInput = document.getElementById("heroServiceSearch");
+    const searchMessage = document.getElementById("heroSearchMessage");
+
+    function searchService(value) {
+        const term = (value || searchInput.value).trim().toLowerCase();
+
+        if (!term) {
+            searchMessage.textContent = "Please enter a service name.";
+            searchInput.focus();
+            return;
         }
 
+        const service = aliases[term];
 
-
-        /*
-         * QUICK SEARCH BUTTON
-         */
-
-        function quickSearch(service) {
-
-            document.getElementById("serviceSearch").value =
-                service;
-
-            searchService();
-
+        if (service) {
+            window.location.href =
+                "service.html?service=" + encodeURIComponent(service);
+        } else {
+            searchMessage.textContent =
+                "Service not found. Try Plumber, Electrician, Cleaning, AC Repair, Carpenter or Painting.";
         }
+    }
+
+    searchForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        searchService();
+    });
+
+    document.querySelectorAll(".quick-service").forEach(function (button) {
+        button.addEventListener("click", function () {
+            searchInput.value = button.dataset.service;
+            searchService(button.dataset.service);
+        });
+    });
 
 
+    customerForm.addEventListener("submit", function (event) {
 
-        /*
-         * ENTER KEY SEARCH
-         */
+    if (!customerForm.checkValidity()) {
+        return;
+    }
 
-        document
-            .getElementById("serviceSearch")
-            .addEventListener(
-                "keypress",
-                function (event) {
+    event.preventDefault();
 
-                    if (event.key === "Enter") {
+    if (continueBtn.disabled) {
+        return;
+    }
 
-                        searchService();
+    continueBtn.disabled = true;
+    btnText.textContent = "Sending OTP...";
+    btnSpinner.hidden = false;
 
-                    }
+    // Show the loading animation for 300ms
+    setTimeout(function () {
+        customerForm.submit();
+    }, 300);
 
-                }
-            );
-
-    </script>
-
+});
+})();
+</script>
 
 </body>
-
 </html>

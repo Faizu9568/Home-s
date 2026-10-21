@@ -87,8 +87,7 @@
                     Mobile Number
                 </label>
 
-
-                <div class="phone-input">
+              <div class="phone-input">
 
                     <span>
                         +91
@@ -111,9 +110,11 @@
 
                 <!-- CONTINUE BUTTON -->
 
-                <button type="submit">
-                    Continue
-                </button>
+              <button type="submit" id="continueBtn">
+    <span id="btnText">Continue</span>
+
+    <span id="btnSpinner" class="spinner" hidden></span>
+</button>
 
             </form>
 
@@ -271,6 +272,30 @@
             }
         );
 
+        const customerForm = document.getElementById("customerForm");
+const continueBtn = document.getElementById("continueBtn");
+const btnText = document.getElementById("btnText");
+const btnSpinner = document.getElementById("btnSpinner");
+
+customerForm.addEventListener("submit", function (event) {
+
+    // Invalid form par loading start nahi hogi
+    if (!customerForm.checkValidity()) {
+        return;
+    }
+
+    // Double submission prevent karo
+    if (continueBtn.disabled) {
+        event.preventDefault();
+        return;
+    }
+
+    // Loading state immediately show karo
+    continueBtn.disabled = true;
+    btnText.textContent = "Sending OTP...";
+    btnSpinner.hidden = false;
+
+});
     </script>
 
 </body>

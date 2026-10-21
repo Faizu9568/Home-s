@@ -1,6 +1,4 @@
-
 <?php
-
 session_start();
 
 if (
@@ -11,9 +9,7 @@ if (
     header("Location: dashboard.php");
     exit();
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -261,4 +257,3 @@ if (
 </body>
 
 </html>
-```

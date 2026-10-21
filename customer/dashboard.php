@@ -1,24 +1,75 @@
 <?php
-
 session_start();
 
-/* ================= LOGIN CHECK ================= */
+/* =========================
+   CUSTOMER LOGIN CHECK
+========================= */
 
 if (!isset($_SESSION["user_id"])) {
     header("Location: ../html/login.html");
     exit();
 }
 
-/* ================= CUSTOMER ROLE CHECK ================= */
-
 if (strtolower(trim($_SESSION["user_role"] ?? "")) !== "customer") {
-    die("Access denied.");
+    http_response_code(403);
+    exit("Access denied. Customer account required.");
 }
 
-/* ================= CUSTOMER NAME ================= */
+/* =========================
+   GET CUSTOMER NAME
+========================= */
 
-$name = htmlspecialchars($_SESSION["user_name"] ?? "Customer");
+$customerId = (int) $_SESSION["user_id"];
 
+$rawName = $_SESSION["user_name"]
+    ?? $_SESSION["name"]
+    ?? $_SESSION["customer_name"]
+    ?? "Customer";
+
+/* Database se actual customer name lene ki koshish */
+try {
+    require_once __DIR__ . "/../config/database.php";
+
+    if (isset($conn) && $conn instanceof mysqli) {
+
+        $stmt = $conn->prepare(
+            "SELECT name FROM users
+             WHERE id = ? AND LOWER(role) = 'customer'
+             LIMIT 1"
+        );
+
+        if ($stmt) {
+            $stmt->bind_param("i", $customerId);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $customer = $result->fetch_assoc();
+
+            if (!empty($customer["name"])) {
+                $rawName = $customer["name"];
+                $_SESSION["user_name"] = $rawName;
+            }
+
+            $stmt->close();
+        }
+    }
+} catch (Throwable $e) {
+    // Database lookup fail ho to session wala naam use hoga.
+}
+
+$rawName = trim((string) $rawName);
+
+if ($rawName === "") {
+    $rawName = "Customer";
+}
+
+$name = htmlspecialchars($rawName, ENT_QUOTES, "UTF-8");
+
+$firstName = htmlspecialchars(
+    explode(" ", $rawName)[0],
+    ENT_QUOTES,
+    "UTF-8"
+);
 ?>
 
 <!DOCTYPE html>
@@ -32,479 +83,851 @@ $name = htmlspecialchars($_SESSION["user_name"] ?? "Customer");
 
     <title>Customer Dashboard | HomeServe</title>
 
-    <link rel="stylesheet" href="../css/dashboard.css">
-
     <style>
 
+        :root {
+            --blue: #1d477d;
+            --dark-blue: #15365f;
+            --orange: #ff7900;
+            --orange-dark: #e66d00;
+            --text: #263449;
+            --muted: #68768a;
+            --white: #ffffff;
+        }
+
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-            color: #222;
+        html {
+            scroll-behavior: smooth;
         }
 
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(
+                    circle at 5% 10%,
+                    rgba(29, 71, 125, 0.09),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at 95% 35%,
+                    rgba(255, 121, 0, 0.08),
+                    transparent 30%
+                ),
+                #f3f6fb;
 
-        /* ================= NAVBAR ================= */
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* =========================
+           NAVBAR
+        ========================= */
 
         .navbar {
-            background: #1d477d;
+            background: var(--blue);
             color: white;
 
-            padding: 18px 50px;
+            padding: 18px 4%;
 
             display: flex;
             justify-content: space-between;
             align-items: center;
 
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            gap: 20px;
+
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
 
             position: sticky;
             top: 0;
             z-index: 1000;
+
+            animation: slideDown 0.6s ease;
         }
-
-
-        /* ================= LOGO ================= */
 
         .logo a {
             color: white;
-            text-decoration: none;
-
-            font-size: 26px;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
-
-
-        /* ================= NAV LINKS ================= */
 
         .nav-links {
             display: flex;
             align-items: center;
-
-            gap: 28px;
-
+            gap: 30px;
             list-style: none;
-
-            margin: 0;
-            padding: 0;
-        }
-
-        .nav-links li {
-            margin: 0;
-            padding: 0;
         }
 
         .nav-links a {
             color: white;
-
-            text-decoration: none;
-
-            font-weight: bold;
-
             font-size: 15px;
+            font-weight: 700;
+            position: relative;
+            transition: color 0.3s;
+        }
 
-            padding: 8px 4px;
-
-            transition: 0.3s;
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 2px;
+            left: 0;
+            bottom: -7px;
+            background: #ffbd80;
+            transition: width 0.3s;
         }
 
         .nav-links a:hover {
-            color: #ff8a00;
+            color: #ffd3a8;
         }
 
-
-        /* ================= LOGOUT ================= */
-
-        .nav-buttons {
-            display: flex;
-            align-items: center;
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
         .logout-btn {
-            display: inline-block;
-
-            padding: 10px 20px;
-
-            background: #ff7a00;
-
+            background: var(--orange);
             color: white;
-
-            text-decoration: none;
-
-            border-radius: 8px;
-
+            padding: 12px 20px;
+            border-radius: 10px;
             font-weight: bold;
-
+            display: inline-block;
             transition: 0.3s;
         }
 
         .logout-btn:hover {
-            background: #e66d00;
-
-            transform: translateY(-1px);
+            background: var(--orange-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 121, 0, 0.3);
         }
 
-
-        /* ================= DASHBOARD ================= */
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
 
         .dashboard {
-            max-width: 1100px;
-
-            margin: 50px auto;
-
-            padding: 20px;
+            max-width: 1150px;
+            margin: auto;
+            padding: 45px 22px 20px;
         }
 
-
-        /* ================= WELCOME ================= */
+        /* =========================
+           WELCOME SECTION
+        ========================= */
 
         .welcome {
-            background: white;
+            position: relative;
+            overflow: hidden;
 
-            padding: 35px;
+            background: linear-gradient(
+                120deg,
+                #ffffff,
+                #f8fbff,
+                #fff4e9
+            );
 
-            border-radius: 15px;
+            border-radius: 22px;
+            padding: 40px;
 
-            box-shadow:
-                0 5px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 12px 35px rgba(24, 48, 80, 0.09);
+
+            animation: fadeUp 0.8s ease both;
+        }
+
+        .welcome::after {
+            content: "🏡";
+
+            position: absolute;
+            right: 55px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            font-size: 90px;
+            opacity: 0.13;
+
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        .welcome-label {
+            display: inline-block;
+
+            background: #e8f1ff;
+            color: var(--blue);
+
+            padding: 8px 13px;
+            border-radius: 30px;
+
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         .welcome h1 {
-            margin-top: 0;
+            color: var(--blue);
 
-            margin-bottom: 12px;
+            font-size: clamp(28px, 4vw, 42px);
 
-            color: #1d477d;
+            margin: 18px 0 12px;
 
-            font-size: 34px;
+            max-width: 80%;
         }
 
         .welcome p {
-            margin-bottom: 0;
+            color: #5e6979;
 
-            font-size: 17px;
+            font-size: 16px;
+            line-height: 1.8;
 
-            color: #555;
+            max-width: 650px;
         }
 
+        .welcome-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 23px;
+        }
 
-        /* ================= CARDS ================= */
+        /* =========================
+           BUTTONS
+        ========================= */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 8px;
+
+            background: var(--orange);
+            color: white;
+
+            border: none;
+            border-radius: 10px;
+
+            padding: 13px 19px;
+
+            font-size: 14px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .btn:hover {
+            background: var(--orange-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(255, 121, 0, 0.25);
+        }
+
+        .btn-secondary {
+            color: var(--blue);
+            background: #eaf1fb;
+        }
+
+        .btn-secondary:hover {
+            color: white;
+            background: var(--blue);
+        }
+
+        /* =========================
+           SECTION HEADING
+        ========================= */
+
+        .section-heading {
+            margin: 38px 2px 20px;
+            animation: fadeUp 0.8s 0.15s both;
+        }
+
+        .section-heading h2 {
+            color: var(--blue);
+            font-size: 27px;
+            margin-bottom: 8px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        /* =========================
+           DASHBOARD CARDS
+        ========================= */
 
         .cards {
             display: grid;
 
-            grid-template-columns:
-                repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
 
-            gap: 25px;
-
-            margin-top: 30px;
+            gap: 22px;
         }
 
         .card {
+            position: relative;
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+
             background: white;
 
-            padding: 30px;
+            border: 1px solid #e9eef5;
+            border-radius: 19px;
 
-            border-radius: 15px;
+            padding: 28px;
 
-            text-align: center;
+            min-height: 270px;
 
-            box-shadow:
-                0 5px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 25px rgba(24, 48, 80, 0.06);
 
-            transition: 0.3s;
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+
+            animation: fadeUp 0.7s ease both;
+        }
+
+        .card:nth-child(1) {
+            animation-delay: 0.15s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.45s;
+        }
+
+        .card::before {
+            content: "";
+
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 4px;
+
+            background: linear-gradient(
+                90deg,
+                var(--blue),
+                var(--orange)
+            );
+
+            transform: scaleX(0);
+            transform-origin: left;
+
+            transition: transform 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
 
-            box-shadow:
-                0 10px 25px rgba(0, 0, 0, 0.12);
+            border-color: #d4e1f2;
+
+            box-shadow: 0 17px 35px rgba(24, 48, 80, 0.13);
         }
 
-        .card h2 {
-            color: #1d477d;
+        .card:hover::before {
+            transform: scaleX(1);
+        }
 
-            margin-top: 0;
+        .card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 58px;
+            height: 58px;
+
+            border-radius: 16px;
+
+            background: #eaf2ff;
+
+            font-size: 29px;
+
+            margin-bottom: 20px;
+
+            transition: transform 0.3s ease;
+        }
+
+        .card:nth-child(2) .card-icon {
+            background: #fff0e2;
+        }
+
+        .card:nth-child(3) .card-icon {
+            background: #e6f8ef;
+        }
+
+        .card:hover .card-icon {
+            transform: rotate(-6deg) scale(1.08);
+        }
+
+        .card h3 {
+            color: var(--blue);
+            font-size: 22px;
+            margin-bottom: 12px;
         }
 
         .card p {
-            color: #555;
-
-            line-height: 1.6;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 22px;
+            flex-grow: 1;
         }
 
-        .card a {
-            display: inline-block;
+        /* =========================
+           TRUST SECTION
+        ========================= */
 
-            margin-top: 15px;
+        .trust-section {
+            display: flex;
+            flex-wrap: wrap;
 
-            padding: 12px 22px;
+            justify-content: center;
+            gap: 18px 30px;
 
-            background: #ff7a00;
+            margin: 28px 0 10px;
+            padding: 22px;
 
-            color: white;
+            border: 1px solid #e5ebf4;
+            border-radius: 16px;
 
-            text-decoration: none;
+            background: rgba(255, 255, 255, 0.8);
 
-            border-radius: 8px;
-
-            font-weight: bold;
-
-            transition: 0.3s;
+            animation: fadeUp 0.8s 0.5s both;
         }
 
-        .card a:hover {
-            background: #e66d00;
+        .trust-item {
+            color: #536176;
+            font-size: 14px;
         }
 
+        .trust-item strong {
+            color: var(--blue);
+        }
 
-        /* ================= FOOTER ================= */
+        /* =========================
+           FOOTER
+        ========================= */
 
         footer {
+            margin-top: 45px;
+            padding: 30px 20px;
+
             text-align: center;
 
-            padding: 30px;
-
-            margin-top: 50px;
-
-            background: #1d477d;
-
             color: white;
+            background: var(--blue);
         }
 
         footer h3 {
-            margin-top: 0;
+            font-size: 22px;
+            margin-bottom: 10px;
         }
 
+        footer p {
+            margin: 9px 0;
+            line-height: 1.6;
+        }
 
-        /* ================= MOBILE ================= */
+        /* =========================
+           ANIMATIONS
+        ========================= */
 
-        @media (max-width: 800px) {
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(22px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floating {
+            0%, 100% {
+                margin-top: 0;
+            }
+
+            50% {
+                margin-top: -10px;
+            }
+        }
+
+        /* =========================
+           TABLET
+        ========================= */
+
+        @media (max-width: 850px) {
 
             .navbar {
-                padding: 15px 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
 
-                flex-direction: column;
-
-                gap: 15px;
+            .logo {
+                width: 100%;
+                text-align: center;
             }
 
             .nav-links {
                 flex-wrap: wrap;
-
                 justify-content: center;
+                gap: 18px;
+            }
 
-                gap: 15px;
+            .cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .welcome::after {
+                right: 25px;
+                opacity: 0.08;
+            }
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 560px) {
+
+            .navbar {
+                padding: 17px 12px;
+                gap: 17px;
+            }
+
+            .logo a {
+                font-size: 25px;
+            }
+
+            .nav-links {
+                gap: 13px;
+            }
+
+            .nav-links a {
+                font-size: 13px;
             }
 
             .dashboard {
-                margin: 25px auto;
+                padding: 25px 14px 15px;
+            }
 
-                padding: 15px;
+            .welcome {
+                padding: 26px 21px;
+                border-radius: 18px;
+            }
+
+            .welcome h1 {
+                font-size: 29px;
+                max-width: 100%;
+            }
+
+            .welcome p {
+                font-size: 15px;
+            }
+
+            .welcome::after {
+                display: none;
+            }
+
+            .welcome-actions {
+                flex-direction: column;
+            }
+
+            .welcome-actions .btn {
+                width: 100%;
             }
 
             .cards {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
 
-            .welcome h1 {
-                font-size: 28px;
+            .card {
+                min-height: 0;
+                padding: 24px;
             }
 
+            .section-heading h2 {
+                font-size: 24px;
+            }
+
+            .trust-section {
+                justify-content: flex-start;
+                gap: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
     </style>
 
 </head>
 
-
 <body>
 
-
-    <!-- ================= NAVBAR ================= -->
+    <!-- NAVBAR -->
 
     <nav class="navbar">
 
-
-        <!-- LOGO -->
-
         <div class="logo">
-
-            <a href="dashboard.php">
-                HomeServe
-            </a>
-
+            <a href="dashboard.php">HomeServe</a>
         </div>
-
-
-        <!-- NAVIGATION -->
 
         <ul class="nav-links">
 
             <li>
-                <a href="dashboard.php">
-                    Home
-                </a>
+                <a href="dashboard.php">Home</a>
             </li>
 
             <li>
-                <a href="../html/service.html">
-                    Services
-                </a>
+                <a href="../html/service.html">Services</a>
             </li>
 
             <li>
-                <a href="my_bookings.php">
-                    My Bookings
-                </a>
+                <a href="my_bookings.php">My Bookings</a>
             </li>
 
             <li>
-                <a href="profile.php">
-                    Profile
-                </a>
+                <a href="profile.php">Profile</a>
             </li>
 
         </ul>
 
-
-        <!-- LOGOUT -->
-
-        <div class="nav-buttons">
-
-            <a
-                href="../php/logout.php"
-                class="logout-btn"
-            >
-                Logout
+        <div>
+            <a href="../php/logout.php" class="logout-btn">
+                Logout ↗
             </a>
-
         </div>
-
 
     </nav>
 
 
-
-    <!-- ================= DASHBOARD ================= -->
+    <!-- MAIN DASHBOARD -->
 
     <main class="dashboard">
 
+        <!-- WELCOME SECTION -->
 
-        <!-- WELCOME -->
+        <section class="welcome">
 
-        <div class="welcome">
+            <span class="welcome-label">
+                🏡 YOUR HOMESERVE ACCOUNT
+            </span>
 
             <h1>
                 Welcome, <?php echo $name; ?>! 👋
             </h1>
 
             <p>
-                Manage your home service bookings from your dashboard.
+                Your home, your comfort!
+
+                Book trusted home-service professionals,
+                manage your bookings and enjoy reliable
+                services at your doorstep.
             </p>
 
-        </div>
+            <div class="welcome-actions">
+
+                <a
+                    href="../html/service.html"
+                    class="btn"
+                >
+                    + Book a Service
+                </a>
+
+                <a
+                    href="my_bookings.php"
+                    class="btn btn-secondary"
+                >
+                    View My Bookings →
+                </a>
+
+            </div>
+
+        </section>
 
 
+        <!-- SECTION TITLE -->
 
-        <!-- ================= CARDS ================= -->
+        <section class="section-heading">
 
-        <div class="cards">
+            <h2>Your Dashboard</h2>
+
+            <p>
+                What would you like to do today,
+                <?php echo $firstName; ?>?
+            </p>
+
+        </section>
 
 
-            <!-- MY BOOKINGS -->
+        <!-- DASHBOARD CARDS -->
 
-            <div class="card">
+        <section class="cards">
 
-                <h2>
-                    📅 My Bookings
-                </h2>
+
+            <!-- BOOKINGS CARD -->
+
+            <article class="card">
+
+                <div class="card-icon">
+                    📅
+                </div>
+
+                <h3>My Bookings</h3>
 
                 <p>
                     View your current and previous
-                    home service bookings.
+                    home-service bookings and check
+                    their latest status.
                 </p>
 
-                <a href="my_bookings.php">
-                    View Bookings
+                <a
+                    href="my_bookings.php"
+                    class="btn"
+                >
+                    View Bookings →
                 </a>
 
-            </div>
+            </article>
 
 
+            <!-- SERVICES CARD -->
 
-            <!-- BOOK SERVICE -->
+            <article class="card">
 
-            <div class="card">
+                <div class="card-icon">
+                    🛠️
+                </div>
 
-                <h2>
-                    🛠️ Book a Service
-                </h2>
+                <h3>Book a Service</h3>
 
                 <p>
-                    Find and book a professional
-                    home service.
+                    Find trusted professionals for
+                    plumbing, electrical work,
+                    cleaning, AC repair and more.
                 </p>
 
-                <a href="../html/service.html">
-                    Book Service
+                <a
+                    href="../html/service.html"
+                    class="btn"
+                >
+                    Explore Services →
                 </a>
 
-            </div>
+            </article>
 
 
+            <!-- PROFILE CARD -->
 
-            <!-- PROFILE -->
+            <article class="card">
 
-            <div class="card">
+                <div class="card-icon">
+                    👤
+                </div>
 
-                <h2>
-                    👤 My Profile
-                </h2>
+                <h3>My Profile</h3>
 
                 <p>
-                    View and manage your
-                    account information.
+                    View your customer account
+                    details and manage your
+                    HomeServe profile.
                 </p>
 
-                <a href="profile.php">
-                    View Profile
+                <a
+                    href="profile.php"
+                    class="btn"
+                >
+                    View Profile →
                 </a>
 
+            </article>
+
+
+        </section>
+
+
+        <!-- TRUST SECTION -->
+
+        <section class="trust-section">
+
+            <div class="trust-item">
+                🛡️ <strong>Trusted Professionals</strong>
             </div>
 
+            <div class="trust-item">
+                ⚡ <strong>Easy Booking</strong>
+            </div>
 
-        </div>
+            <div class="trust-item">
+                🏠 <strong>Service at Your Doorstep</strong>
+            </div>
 
+        </section>
 
     </main>
 
 
-
-    <!-- ================= FOOTER ================= -->
+    <!-- FOOTER -->
 
     <footer>
 
-        <h3>
-            HomeServe
-        </h3>
+        <h3>HomeServe</h3>
 
         <p>
             Your trusted home service provider.
         </p>
 
         <p>
-            © 2026 HomeServe. All Rights Reserved.
+            © <?php echo date("Y"); ?>
+            HomeServe. All Rights Reserved.
         </p>
 
     </footer>
-
 
 </body>
 

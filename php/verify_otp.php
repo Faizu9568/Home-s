@@ -1,63 +1,62 @@
 <?php
 
 session_start();
+require_once "../config/database.php";
 
-include "../config/database.php";
-
-/* Only POST request allowed */
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     header("Location: ../html/login.html");
     exit();
 }
 
+// Get submitted OTP
+$submittedOtp = trim($_POST["otp"] ?? "");
 
-/* Get OTP */
-$otp = trim($_POST["otp"] ?? "");
-
-
-/* Validate OTP */
-if ($otp === "" || !preg_match("/^[0-9]{6}$/", $otp)) {
-    die("
-        <h2>Invalid OTP</h2>
-        <p>Please enter a valid 6 digit OTP.</p>
-        <a href='../html/verify_otp.html'>Try Again</a>
-    ");
+if (!preg_match('/^\d{6}$/', $submittedOtp)) {
+    die("Please enter a valid 6 digit OTP.");
 }
 
+// Check OTP session
+if (
+    !isset($_SESSION["test_otp"]) ||
+    !isset($_SESSION["otp_phone"])
+) {
+    die("OTP session expired. Please login again.");
+}
 
-/*
-|--------------------------------------------------------------------------
-| NEW CUSTOMER
-|--------------------------------------------------------------------------
-*/
+$sessionOtp = (string) $_SESSION["test_otp"];
+$phone = (string) $_SESSION["otp_phone"];
+
+if (!hash_equals($sessionOtp, $submittedOtp)) {
+    die("Incorrect OTP. Please try again.");
+}
+
+$user = null;
+
+// ========================================
+// NEW CUSTOMER VERIFICATION
+// ========================================
 
 if (
     isset($_SESSION["new_customer"]) &&
-    $_SESSION["new_customer"] === true &&
-    isset($_SESSION["new_customer_phone"]) &&
-    isset($_SESSION["test_otp"])
+    $_SESSION["new_customer"] === true
 ) {
 
-    $phone = $_SESSION["new_customer_phone"];
-    $sessionOtp = $_SESSION["test_otp"];
+    $newPhone = (string) ($_SESSION["new_customer_phone"] ?? "");
+    $newName = trim((string) ($_SESSION["new_customer_name"] ?? ""));
 
-
-    /* Check OTP */
-    if ((string)$sessionOtp !== (string)$otp) {
-
-        die("
-            <h2>Invalid OTP</h2>
-            <p>The OTP you entered is incorrect.</p>
-            <a href='../html/verify_otp.html'>Try Again</a>
-        ");
+    if ($newPhone !== $phone) {
+        die("Mobile number verification failed. Please try again.");
     }
 
+    if ($newName === "") {
+        die("Your name is missing. Please login again and enter your name.");
+    }
 
-    /*
-     * Check if phone already exists.
-     * This prevents duplicate customer accounts.
-     */
+    if (mb_strlen($newName) > 100) {
+        die("Name must not exceed 100 characters.");
+    }
 
+    // Check again to prevent duplicate accounts
     $check = $conn->prepare(
         "SELECT id, name, email, phone, role
          FROM users
@@ -66,7 +65,7 @@ if (
     );
 
     if (!$check) {
-        die("Database error: " . $conn->error);
+        die("Unable to verify account. Please try again.");
     }
 
     $check->bind_param("s", $phone);
@@ -74,369 +73,192 @@ if (
 
     $result = $check->get_result();
 
-
-    /*
-     * If account already exists
-     */
-
     if ($result->num_rows > 0) {
 
-        $user = $result->fetch_assoc();
+        // Account was created in the meantime
+        $existingUser = $result->fetch_assoc();
 
-        $check->close();
-
-
-        if (strtolower(trim($user["role"])) !== "customer") {
+        if (strtolower(trim($existingUser["role"])) !== "customer") {
+            $check->close();
             die("This mobile number belongs to another account type.");
         }
 
-    }
+        $user = $existingUser;
 
+    } else {
 
-    /*
-     * New customer account
-     */
+        // Create new customer
+        $email = "customer_" . $phone . "_" .
+                 bin2hex(random_bytes(4)) . "@homeserve.local";
 
-    else {
-
-        $check->close();
-
-
-        /*
-         * Temporary name
-         */
-        $name = "Customer";
-
-
-        /*
-         * Temporary unique email.
-         *
-         * Email is required by database,
-         * so we create an internal placeholder.
-         */
-
-        $email =
-            "customer_" .
-            $phone .
-            "_" .
-            bin2hex(random_bytes(3)) .
-            "@homeserve.local";
-
-
-        /*
-         * Generate random password.
-         *
-         * Customer will login using OTP,
-         * so they don't need to know this password.
-         */
-
-        $randomPassword =
-            bin2hex(random_bytes(16));
-
-
-        $hashedPassword =
-            password_hash(
-                $randomPassword,
-                PASSWORD_DEFAULT
-            );
-
-
+        $randomPassword = bin2hex(random_bytes(32));
+        $passwordHash = password_hash($randomPassword, PASSWORD_DEFAULT);
         $role = "customer";
 
-
-        /*
-         * Insert customer
-         */
-
-        $stmt = $conn->prepare(
-            "INSERT INTO users
-            (name, email, password, phone, role)
-            VALUES (?, ?, ?, ?, ?)"
+        $insert = $conn->prepare(
+            "INSERT INTO users (name, email, password, phone, role)
+             VALUES (?, ?, ?, ?, ?)"
         );
 
-
-        if (!$stmt) {
-            die("Database error: " . $conn->error);
+        if (!$insert) {
+            $check->close();
+            die("Unable to create your account. Please try again.");
         }
 
-
-        $stmt->bind_param(
+        $insert->bind_param(
             "sssss",
-            $name,
+            $newName,
             $email,
-            $hashedPassword,
+            $passwordHash,
             $phone,
             $role
         );
 
-
-        if (!$stmt->execute()) {
-
-            $error = $stmt->error;
-
-            $stmt->close();
-
-            die("
-                <h2>Account Creation Failed</h2>
-                <p>$error</p>
-                <a href='../html/login.html'>Try Again</a>
-            ");
+        if (!$insert->execute()) {
+            $insert->close();
+            $check->close();
+            die("Account creation failed. Please try again.");
         }
 
+        $newUserId = (int) $insert->insert_id;
 
-        $newUserId = $stmt->insert_id;
+        $insert->close();
 
-        $stmt->close();
-
-
-        /*
-         * Get newly created customer
-         */
-
-        $find = $conn->prepare(
+        // Fetch the newly created customer
+        $fetch = $conn->prepare(
             "SELECT id, name, email, phone, role
              FROM users
              WHERE id = ?
              LIMIT 1"
         );
 
-
-        if (!$find) {
-            die("Database error: " . $conn->error);
+        if (!$fetch) {
+            $check->close();
+            die("Account created, but unable to load your profile.");
         }
 
+        $fetch->bind_param("i", $newUserId);
+        $fetch->execute();
 
-        $find->bind_param(
-            "i",
-            $newUserId
-        );
+        $newResult = $fetch->get_result();
+        $user = $newResult->fetch_assoc();
 
-        $find->execute();
-
-        $result = $find->get_result();
-
-        $user = $result->fetch_assoc();
-
-        $find->close();
+        $fetch->close();
     }
 
-}
+    $check->close();
 
+    // Clear new customer details after successful verification
+    unset(
+        $_SESSION["new_customer"],
+        $_SESSION["new_customer_phone"],
+        $_SESSION["new_customer_name"]
+    );
 
-/*
-|--------------------------------------------------------------------------
-| EXISTING CUSTOMER
-|--------------------------------------------------------------------------
-*/
+// ========================================
+// EXISTING CUSTOMER VERIFICATION
+// ========================================
 
-else {
+} elseif (isset($_SESSION["otp_user_id"])) {
 
-    /*
-     * Check OTP session
-     */
+    $userId = (int) $_SESSION["otp_user_id"];
 
-    if (!isset($_SESSION["otp_user_id"])) {
-
-        die("
-            <h2>OTP Session Expired</h2>
-            <p>Please login again.</p>
-            <a href='../html/login.html'>Login Again</a>
-        ");
-    }
-
-
-    $userId =
-        (int) $_SESSION["otp_user_id"];
-
-
-    /*
-     * Get customer
-     */
-
-    $stmt = $conn->prepare(
+    $fetch = $conn->prepare(
         "SELECT id, name, email, phone, role, otp, otp_expiry
          FROM users
          WHERE id = ?
          LIMIT 1"
     );
 
-
-    if (!$stmt) {
-        die("Database error: " . $conn->error);
+    if (!$fetch) {
+        die("Unable to verify your account. Please try again.");
     }
 
+    $fetch->bind_param("i", $userId);
+    $fetch->execute();
 
-    $stmt->bind_param(
-        "i",
-        $userId
-    );
-
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-
+    $result = $fetch->get_result();
 
     if ($result->num_rows === 0) {
-
-        $stmt->close();
-
-        die("
-            <h2>User Not Found</h2>
-            <a href='../html/login.html'>Login Again</a>
-        ");
+        $fetch->close();
+        die("Account not found. Please login again.");
     }
 
+    $existingUser = $result->fetch_assoc();
+    $fetch->close();
 
-    $user = $result->fetch_assoc();
-
-    $stmt->close();
-
-
-    /*
-     * Check OTP
-     */
-
-    if ((string)$user["otp"] !== (string)$otp) {
-
-        die("
-            <h2>Invalid OTP</h2>
-            <p>The OTP you entered is incorrect.</p>
-            <a href='../html/verify_otp.html'>Try Again</a>
-        ");
+    // Confirm phone matches
+    if ((string) $existingUser["phone"] !== $phone) {
+        die("Mobile number verification failed.");
     }
 
-
-    /*
-     * Check OTP expiry
-     */
-
-    if (
-        empty($user["otp_expiry"]) ||
-        strtotime($user["otp_expiry"]) < time()
-    ) {
-
-        die("
-            <h2>OTP Expired</h2>
-            <p>Please request a new OTP.</p>
-            <a href='../html/login.html'>Login Again</a>
-        ");
+    // Confirm account role
+    if (strtolower(trim($existingUser["role"])) !== "customer") {
+        die("This account is not a customer account.");
     }
 
-
-    /*
-     * Customer only
-     */
-
-    if (
-        strtolower(trim($user["role"])) !== "customer"
-    ) {
-
-        die("
-            <h2>Access Denied</h2>
-            <p>Only customers can use OTP login.</p>
-            <a href='../html/login.html'>Login Again</a>
-        ");
+    // Confirm database OTP
+    if (!hash_equals((string) $existingUser["otp"], $submittedOtp)) {
+        die("Incorrect OTP. Please try again.");
     }
 
+    // Confirm expiry
+    $expiry = strtotime((string) $existingUser["otp_expiry"]);
 
-    /*
-     * Clear OTP
-     */
+    if ($expiry === false || $expiry < time()) {
+        die("OTP has expired. Please login again.");
+    }
 
+    // Clear database OTP
     $clear = $conn->prepare(
-        "UPDATE users
-         SET otp = NULL,
-             otp_expiry = NULL
-         WHERE id = ?"
+        "UPDATE users SET otp = NULL, otp_expiry = NULL WHERE id = ?"
     );
-
 
     if ($clear) {
-
-        $clear->bind_param(
-            "i",
-            $userId
-        );
-
+        $clear->bind_param("i", $userId);
         $clear->execute();
-
         $clear->close();
     }
+
+    $user = $existingUser;
+
+} else {
+    die("Invalid login session. Please login again.");
 }
 
+// ========================================
+// SAVE CUSTOMER SESSION
+// ========================================
 
-/*
-|--------------------------------------------------------------------------
-| CREATE LOGIN SESSION
-|--------------------------------------------------------------------------
-*/
+if (!$user || empty($user["id"])) {
+    die("Unable to load your account. Please login again.");
+}
 
-$_SESSION["user_id"] =
-    (int) $user["id"];
+// Regenerate session ID after authentication
+session_regenerate_id(true);
 
-$_SESSION["user_name"] =
-    $user["name"];
+$_SESSION["user_id"] = (int) $user["id"];
+$_SESSION["user_name"] = (string) $user["name"];
+$_SESSION["user_email"] = (string) $user["email"];
+$_SESSION["user_phone"] = (string) $user["phone"];
+$_SESSION["user_role"] = (string) $user["role"];
 
-$_SESSION["user_email"] =
-    $user["email"];
+// Clear temporary OTP data
+unset(
+    $_SESSION["test_otp"],
+    $_SESSION["otp_user_id"],
+    $_SESSION["otp_phone"]
+);
 
-$_SESSION["user_phone"] =
-    $user["phone"];
-
-$_SESSION["user_role"] =
-    $user["role"];
-
-
-/*
-|--------------------------------------------------------------------------
-| REMEMBER DESTINATION
-|--------------------------------------------------------------------------
-*/
-
-$redirect =
-    $_SESSION["login_redirect"] ?? "dashboard";
-
-
-/*
-|--------------------------------------------------------------------------
-| CLEAR TEMPORARY OTP SESSION
-|--------------------------------------------------------------------------
-*/
-
-unset($_SESSION["otp_user_id"]);
-unset($_SESSION["otp_phone"]);
-unset($_SESSION["test_otp"]);
-unset($_SESSION["new_customer"]);
-unset($_SESSION["new_customer_phone"]);
+// Redirect to requested page
+$redirect = $_SESSION["login_redirect"] ?? "dashboard";
 unset($_SESSION["login_redirect"]);
 
-
-/*
-|--------------------------------------------------------------------------
-| REDIRECT
-|--------------------------------------------------------------------------
-*/
-
 if ($redirect === "booking") {
-
-    header(
-        "Location: ../html/booking.html"
-    );
-
+    header("Location: ../customer/booking.php");
     exit();
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| CUSTOMER DASHBOARD
-|--------------------------------------------------------------------------
-*/
-
-header(
-    "Location: ../customer/dashboard.php"
-);
-
+header("Location: ../customer/dashboard.php");
 exit();
-
 ?>

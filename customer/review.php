@@ -7,13 +7,23 @@ include "../config/database.php";
    CUSTOMER LOGIN CHECK
 ========================= */
 
-if (!isset($_SESSION["user_id"])) {
+// My Bookings ke jaisa customer session handle karo
+if (
+    !isset($_SESSION["customer_id"]) &&
+    isset($_SESSION["user_id"]) &&
+    strtolower(trim($_SESSION["user_role"] ?? "")) === "customer"
+) {
+    $_SESSION["customer_id"] = (int) $_SESSION["user_id"];
+}
+
+// Customer login check
+if (!isset($_SESSION["customer_id"])) {
     header("Location: ../html/login.html");
     exit();
 }
 
-$customerId = (int) $_SESSION["user_id"];
-
+// Customer ID
+$customerId = (int) $_SESSION["customer_id"];
 
 /* =========================
    GET BOOKING ID

@@ -190,3 +190,124 @@ select {
     font-size: 15px;
     background-color: white;
 }
+/* Interactive loading button */
+
+#continueBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    width: 100%;
+    padding: 14px;
+
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+#continueBtn:hover {
+    transform: translateY(-2px);
+}
+
+#continueBtn:active {
+    transform: scale(0.98);
+}
+
+#continueBtn:disabled {
+    cursor: wait;
+    opacity: 0.8;
+}
+
+/* Circular loading animation */
+
+.spinner {
+    width: 18px;
+    height: 18px;
+
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: white;
+
+    border-radius: 50%;
+
+    animation: spin 0.7s linear infinite;
+}
+
+.spinner[hidden] {
+    display: none;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+/* ============================= */
+/* INTERACTIVE CONTINUE BUTTON */
+/* ============================= */
+
+#continueBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    width: 100%;
+    padding: 14px 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+#continueBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+#continueBtn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+#continueBtn:disabled {
+    cursor: wait;
+    opacity: 0.8;
+}
+
+/* Spinner */
+
+#btnSpinner.spinner {
+    width: 18px;
+    height: 18px;
+
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: white;
+
+    border-radius: 50%;
+
+    display: inline-block;
+    box-sizing: border-box;
+
+    animation: homeserve-spin 0.7s linear infinite;
+}
+
+#btnSpinner[hidden] {
+    display: none !important;
+}
+
+@keyframes homeserve-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
