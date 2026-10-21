@@ -1,6 +1,7 @@
 
 <?php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
+
 echo json_encode([
     'status' => 'success',
     'message' => 'HomeServe PHP backend is running'
